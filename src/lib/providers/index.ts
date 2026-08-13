@@ -1,7 +1,12 @@
 import { Movie, MovieProvider, MovieSearchResult } from "../types";
 
-const MOTN_KEY = process.env.STREAMING_AVAILABILITY_API_KEY || "motn-key-v4-trAtYAdjwuKIY7n9a7gamrqGEPdsQtuN";
-const MOTN_BASE_URL = process.env.STREAMING_AVAILABILITY_BASE_URL || "https://api.movieofthenight.com/v4";
+const MOTN_KEY =
+  process.env.STREAMING_AVAILABILITY_API_KEY ||
+  "motn-key-v4-trAtYAdjwuKIY7n9a7gamrqGEPdsQtuN";
+
+const MOTN_BASE_URL =
+  process.env.STREAMING_AVAILABILITY_BASE_URL ||
+  "https://api.movieofthenight.com/v4";
 
 function formatMotnShow(item: any): Movie {
   if (!item) return {} as Movie;
@@ -21,7 +26,9 @@ function formatMotnShow(item: any): Movie {
     null;
 
   const genreNames = Array.isArray(item.genres)
-    ? item.genres.map((g: any) => (typeof g === "string" ? g : g.name || g.id))
+    ? item.genres.map((g: any) =>
+      typeof g === "string" ? g : g.name || g.id
+    )
     : [];
 
   const rating =
@@ -44,7 +51,9 @@ function formatMotnShow(item: any): Movie {
     vote_average: rating,
     vote_count: item.voteCount || 1000,
     genre_names: genreNames,
-    category: genreNames[0] || (item.showType === "series" ? "Series" : "Movie"),
+    category:
+      genreNames[0] ||
+      (item.showType === "series" ? "Series" : "Movie"),
     type: item.showType === "series" ? "series" : "movie",
     statusBadge: item.showType === "series" ? "Series" : "Movie",
     cast: item.cast || [],
@@ -58,16 +67,38 @@ class LiveStreamingMovieProvider implements MovieProvider {
     "Content-Type": "application/json",
   };
 
-  async fetchTrending(_timeWindow: string = "day", page: number = 1, limit: number = 20): Promise<MovieSearchResult> {
+  async fetchTrending(
+    _timeWindow: string = "day",
+    page: number = 1,
+    limit: number = 20
+  ): Promise<MovieSearchResult> {
     try {
       const url = `${MOTN_BASE_URL}/shows/top?country=us&service=netflix`;
-      const res = await fetch(url, { headers: this.headers, next: { revalidate: 3600 } });
+
+      const res = await fetch(url, {
+        headers: this.headers,
+        next: { revalidate: 3600 },
+      });
+
       if (!res.ok) {
-        return { page: 1, results: [], total_pages: 0, total_results: 0 };
+        return {
+          page: 1,
+          results: [],
+          total_pages: 0,
+          total_results: 0,
+        };
       }
+
       const data = await res.json();
-      const rawShows = Array.isArray(data) ? data : data.shows || [];
-      const results = rawShows.slice((page - 1) * limit, page * limit).map(formatMotnShow);
+
+      const rawShows = Array.isArray(data)
+        ? data
+        : data.shows || [];
+
+      const results = rawShows
+        .slice((page - 1) * limit, page * limit)
+        .map(formatMotnShow);
+
       return {
         page,
         results,
@@ -75,30 +106,71 @@ class LiveStreamingMovieProvider implements MovieProvider {
         total_results: rawShows.length,
       };
     } catch {
-      return { page: 1, results: [], total_pages: 0, total_results: 0 };
+      return {
+        page: 1,
+        results: [],
+        total_pages: 0,
+        total_results: 0,
+      };
     }
   }
 
-  async search(query: string, page: number = 1, genre?: string, type?: string, _year?: string): Promise<MovieSearchResult> {
+  async search(
+    query: string,
+    page: number = 1,
+    genre?: string,
+    type?: string,
+    _year?: string,
+    limit: number = 20
+  ): Promise<MovieSearchResult> {
     try {
       let url = "";
       const q = query.trim();
+
       if (q) {
-        url = `${MOTN_BASE_URL}/shows/search/title?title=${encodeURIComponent(q)}&country=us`;
+        url = `${MOTN_BASE_URL}/shows/search/title?title=${encodeURIComponent(
+          q
+        )}&country=us`;
       } else {
-        const params = new URLSearchParams({ country: "us" });
-        if (genre && genre !== "all") params.append("genres", genre.toLowerCase());
-        if (type === "movie" || type === "series") params.append("show_type", type);
+        const params = new URLSearchParams({
+          country: "us",
+        });
+
+        if (genre && genre !== "all") {
+          params.append("genres", genre.toLowerCase());
+        }
+
+        if (type === "movie" || type === "series") {
+          params.append("show_type", type);
+        }
+
         url = `${MOTN_BASE_URL}/shows/search/filters?${params.toString()}`;
       }
 
-      const res = await fetch(url, { headers: this.headers, next: { revalidate: 3600 } });
+      const res = await fetch(url, {
+        headers: this.headers,
+        next: { revalidate: 3600 },
+      });
+
       if (!res.ok) {
-        return { page: 1, results: [], total_pages: 0, total_results: 0 };
+        return {
+          page: 1,
+          results: [],
+          total_pages: 0,
+          total_results: 0,
+        };
       }
+
       const data = await res.json();
-      const rawShows = Array.isArray(data) ? data : data.shows || [];
-      const results = rawShows.slice((page - 1) * limit, page * limit).map(formatMotnShow);
+
+      const rawShows = Array.isArray(data)
+        ? data
+        : data.shows || [];
+
+      const results = rawShows
+        .slice((page - 1) * limit, page * limit)
+        .map(formatMotnShow);
+
       return {
         page,
         results,
@@ -106,43 +178,76 @@ class LiveStreamingMovieProvider implements MovieProvider {
         total_results: rawShows.length,
       };
     } catch {
-      return { page: 1, results: [], total_pages: 0, total_results: 0 };
+      return {
+        page: 1,
+        results: [],
+        total_pages: 0,
+        total_results: 0,
+      };
     }
   }
 
-  async fetchDetails(id: string | number): Promise<Movie | null> {
+  async fetchDetails(
+    id: string | number
+  ): Promise<Movie | null> {
     try {
       const url = `${MOTN_BASE_URL}/shows/${id}`;
-      const res = await fetch(url, { headers: this.headers, next: { revalidate: 3600 } });
+
+      const res = await fetch(url, {
+        headers: this.headers,
+        next: { revalidate: 3600 },
+      });
+
       if (!res.ok) return null;
+
       const data = await res.json();
+
       return formatMotnShow(data);
     } catch {
       return null;
     }
   }
 
-  async fetchByCategory(category: string, page: number = 1, limit: number = 20): Promise<MovieSearchResult> {
+  async fetchByCategory(
+    category: string,
+    page: number = 1,
+    limit: number = 20
+  ): Promise<MovieSearchResult> {
     const catLower = category.toLowerCase().trim();
 
-    // Curated categories that do not exist as standard API genres -> return empty state as requested
     if (
       catLower === "emmy nominees" ||
       catLower === "international award-winning" ||
       catLower === "based on webtoons"
     ) {
-      return { page: 1, results: [], total_pages: 0, total_results: 0 };
+      return {
+        page: 1,
+        results: [],
+        total_pages: 0,
+        total_results: 0,
+      };
     }
 
     try {
       let url = "";
+
       if (catLower === "movies" || catLower === "movie") {
         url = `${MOTN_BASE_URL}/shows/search/filters?country=us&show_type=movie`;
-      } else if (catLower === "series" || catLower === "shows" || catLower === "tv") {
+      } else if (
+        catLower === "series" ||
+        catLower === "shows" ||
+        catLower === "tv"
+      ) {
         url = `${MOTN_BASE_URL}/shows/search/filters?country=us&show_type=series`;
-      } else if (catLower === "animes" || catLower === "anime") {
+      } else if (
+        catLower === "animes" ||
+        catLower === "anime"
+      ) {
         url = `${MOTN_BASE_URL}/shows/search/filters?country=us&genres=animation`;
-      } else if (catLower === "k-dramas" || catLower === "k drama") {
+      } else if (
+        catLower === "k-dramas" ||
+        catLower === "k drama"
+      ) {
         url = `${MOTN_BASE_URL}/shows/search/filters?country=kr`;
       } else if (catLower === "japanese") {
         url = `${MOTN_BASE_URL}/shows/search/filters?country=jp`;
@@ -157,16 +262,35 @@ class LiveStreamingMovieProvider implements MovieProvider {
       } else if (catLower === "chinese") {
         url = `${MOTN_BASE_URL}/shows/search/title?title=chinese&country=us`;
       } else {
-        url = `${MOTN_BASE_URL}/shows/search/filters?country=us&genres=${encodeURIComponent(catLower)}`;
+        url = `${MOTN_BASE_URL}/shows/search/filters?country=us&genres=${encodeURIComponent(
+          catLower
+        )}`;
       }
 
-      const res = await fetch(url, { headers: this.headers, next: { revalidate: 3600 } });
+      const res = await fetch(url, {
+        headers: this.headers,
+        next: { revalidate: 3600 },
+      });
+
       if (!res.ok) {
-        return { page: 1, results: [], total_pages: 0, total_results: 0 };
+        return {
+          page: 1,
+          results: [],
+          total_pages: 0,
+          total_results: 0,
+        };
       }
+
       const data = await res.json();
-      const rawShows = Array.isArray(data) ? data : data.shows || [];
-      const results = rawShows.slice((page - 1) * limit, page * limit).map(formatMotnShow);
+
+      const rawShows = Array.isArray(data)
+        ? data
+        : data.shows || [];
+
+      const results = rawShows
+        .slice((page - 1) * limit, page * limit)
+        .map(formatMotnShow);
+
       return {
         page,
         results,
@@ -174,7 +298,12 @@ class LiveStreamingMovieProvider implements MovieProvider {
         total_results: rawShows.length,
       };
     } catch {
-      return { page: 1, results: [], total_pages: 0, total_results: 0 };
+      return {
+        page: 1,
+        results: [],
+        total_pages: 0,
+        total_results: 0,
+      };
     }
   }
 }
