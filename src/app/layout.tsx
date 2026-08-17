@@ -22,9 +22,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={inter.variable}>
-      <body>
+      <body style={{ backgroundColor: "#282828", margin: 0 }}>
         <Navbar />
-        <div id="app-root" style={{ minHeight: "calc(100vh - 72px)", display: "flex", flexDirection: "column" }}>
+        <div id="app-root" style={{ minHeight: "calc(100vh - 72px)", display: "flex", flexDirection: "column", paddingTop: "72px", backgroundColor: "#282828" }}>
           <div style={{ flex: 1 }}>{children}</div>
           <Footer />
         </div>

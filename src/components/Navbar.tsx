@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Search, Bell, ChevronDown, X, LogIn } from "lucide-react";
+import { Search, Bell, ChevronDown, X, LogIn, Popcorn } from "lucide-react"; // Added Popcorn icon
 
 const genres = [
   "Action",
@@ -22,8 +22,6 @@ const genres = [
   "Thriller",
   "Western",
 ];
-
-
 
 interface NavbarProps {
   activePath?: string;
@@ -85,7 +83,7 @@ export default function Navbar({ activePath = "/" }: NavbarProps) {
           </Link>
         </div>
 
-        {/* Center Section: Main Navigation */}
+        {/* Center Section: Main Navigation (Links Only) */}
         <div className="navbar__center">
           <nav>
             <ul className="navbar__nav-list">
@@ -102,46 +100,47 @@ export default function Navbar({ activePath = "/" }: NavbarProps) {
                   </li>
                 );
               })}
-
-              {/* Genre Dropdown */}
-              <li className="navbar__nav-item">
-                <div className="navbar__dropdown-wrapper" ref={dropdownRef}>
-                  <button
-                    type="button"
-                    className={`navbar__dropdown-trigger${isGenreOpen ? " navbar__dropdown-trigger--active" : ""}`}
-                    onClick={() => setIsGenreOpen(!isGenreOpen)}
-                    aria-expanded={isGenreOpen}
-                    aria-label="Toggle Genre dropdown"
-                  >
-                    <span>Genre</span>
-                    <ChevronDown
-                      size={16}
-                      className={`navbar__dropdown-chevron${isGenreOpen ? " navbar__dropdown-chevron--open" : ""}`}
-                    />
-                  </button>
-
-                  {isGenreOpen && (
-                    <div className="navbar__dropdown-menu">
-                      {genres.map((genre) => (
-                        <Link
-                          key={genre}
-                          href={`/genre/${genre.toLowerCase()}`}
-                          className="navbar__genre-item"
-                          onClick={() => setIsGenreOpen(false)}
-                        >
-                          {genre}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </li>
             </ul>
           </nav>
         </div>
 
-        {/* Right Section: Search, Notifications, Login CTA */}
+        {/* Right Section: Grouped Icons/Dropdowns */}
         <div className="navbar__right">
+
+          {/* 1. Genre Dropdown (Moved here) */}
+          <div className="navbar__dropdown-wrapper" ref={dropdownRef}>
+            <button
+              type="button"
+              className={`navbar__dropdown-trigger${isGenreOpen ? " navbar__dropdown-trigger--active" : ""}`}
+              onClick={() => setIsGenreOpen(!isGenreOpen)}
+              aria-expanded={isGenreOpen}
+              aria-label="Toggle Genre dropdown"
+              style={{ fontSize: '0.9rem', marginRight: '4px' }} // Tightened spacing
+            >
+              <span>Genre</span>
+              <ChevronDown
+                size={14}
+                className={`navbar__dropdown-chevron${isGenreOpen ? " navbar__dropdown-chevron--open" : ""}`}
+              />
+            </button>
+
+            {isGenreOpen && (
+              <div className="navbar__dropdown-menu">
+                {genres.map((genre) => (
+                  <Link
+                    key={genre}
+                    href={`/genre/${genre.toLowerCase()}`}
+                    className="navbar__genre-item"
+                    onClick={() => setIsGenreOpen(false)}
+                  >
+                    {genre}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* 2. Search Icon */}
           <div className="navbar__search-wrapper">
             {isSearchOpen ? (
               <div className="navbar__search-input-container">
@@ -149,7 +148,7 @@ export default function Navbar({ activePath = "/" }: NavbarProps) {
                 <input
                   ref={searchInputRef}
                   type="text"
-                  placeholder="Search movies, series..."
+                  placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => {
@@ -159,30 +158,18 @@ export default function Navbar({ activePath = "/" }: NavbarProps) {
                   }}
                   className="navbar__search-input"
                 />
-                {searchQuery ? (
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery("")}
-                    className="navbar__clear-search"
-                    aria-label="Clear search text"
-                  >
-                    <X size={14} />
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setIsSearchOpen(false)}
-                    className="navbar__clear-search"
-                    aria-label="Close search input"
-                  >
-                    <X size={14} />
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => { setIsSearchOpen(false); setSearchQuery(""); }}
+                  className="navbar__clear-search"
+                >
+                  <X size={14} />
+                </button>
               </div>
             ) : (
               <button
                 type="button"
-                className="navbar__search-btn"
+                className="navbar__icon-btn"
                 onClick={() => setIsSearchOpen(true)}
                 aria-label="Open search bar"
               >
@@ -191,6 +178,7 @@ export default function Navbar({ activePath = "/" }: NavbarProps) {
             )}
           </div>
 
+          {/* 3. Notification Icon */}
           <div className="navbar__notif-wrapper" ref={notificationRef}>
             <button
               type="button"
@@ -209,9 +197,6 @@ export default function Navbar({ activePath = "/" }: NavbarProps) {
               <div className="navbar__notif-menu">
                 <div className="navbar__notif-header">
                   <span>Notifications</span>
-                  <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                    0 New
-                  </span>
                 </div>
                 <div style={{ padding: "1rem", textAlign: "center", fontSize: "0.75rem", color: "var(--text-muted)" }}>
                   No new notifications.
@@ -220,7 +205,13 @@ export default function Navbar({ activePath = "/" }: NavbarProps) {
             )}
           </div>
 
-          <Link href="/login" className="navbar__login-btn">
+          {/* 4. Popcorn Icon */}
+          <button type="button" className="navbar__icon-btn" aria-label="Popcorn">
+            <Popcorn size={20} />
+          </button>
+
+          {/* Login CTA */}
+          <Link href="/login" className="navbar__login-btn" style={{ marginLeft: '8px' }}>
             <LogIn size={16} />
             <span>Login</span>
           </Link>

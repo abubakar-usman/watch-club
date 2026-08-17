@@ -7,6 +7,17 @@ import MediaRow, { MediaItem } from "@/components/MediaRow";
 import MostDiscussedRow from "@/components/MostDiscussedRow";
 import CommunityBanner from "@/components/CommunityBanner";
 
+interface MovieApiItem {
+  id: string | number;
+  title: string;
+  genre_names?: string[];
+  category?: string;
+  posterUrl?: string;
+  poster?: string;
+  poster_path?: string;
+  statusBadge?: string;
+}
+
 export default function Home() {
   const [topSearches, setTopSearches] = useState<MediaItem[]>([]);
   const [recommendedMovies, setRecommendedMovies] = useState<MediaItem[]>([]);
@@ -21,7 +32,7 @@ export default function Home() {
         if (tsRes.ok) {
           const tsData = await tsRes.json();
           setTopSearches(
-            (tsData.results || []).map((m: any) => ({
+            (tsData.results || []).map((m: MovieApiItem) => ({
               id: m.id,
               title: m.title,
               category: m.genre_names?.join(" • ") || m.category || "Trending",
@@ -36,7 +47,7 @@ export default function Home() {
         if (rmRes.ok) {
           const rmData = await rmRes.json();
           setRecommendedMovies(
-            (rmData.results || []).map((m: any) => ({
+            (rmData.results || []).map((m: MovieApiItem) => ({
               id: m.id,
               title: m.title,
               category: m.genre_names?.join(" • ") || m.category || "Movie",
@@ -51,7 +62,7 @@ export default function Home() {
         if (rsRes.ok) {
           const rsData = await rsRes.json();
           setRecommendedSeries(
-            (rsData.results || []).map((m: any) => ({
+            (rsData.results || []).map((m: MovieApiItem) => ({
               id: m.id,
               title: m.title,
               category: m.genre_names?.join(" • ") || m.category || "Series",
@@ -81,7 +92,7 @@ export default function Home() {
             const res = await fetch(`/api/movies/category/${encodeURIComponent(cat)}`);
             if (res.ok) {
               const data = await res.json();
-              const items: MediaItem[] = (data.results || []).map((m: any) => ({
+              const items: MediaItem[] = (data.results || []).map((m: MovieApiItem) => ({
                 id: m.id,
                 title: m.title,
                 category: m.genre_names?.join(" • ") || m.category || cat,
@@ -111,8 +122,8 @@ export default function Home() {
 
   return (
     <main style={{ padding: "0 1rem" }}>
-      {/* Demon Slayer Hero Banner (Kept static as specified) */}
-      <HeroBanner />
+      {/* Spider-Man: Brand New Day Hero Banner (Live API Search) */}
+      <HeroBanner type="spiderman" />
 
       {/* Top 10 Recommendations For Today */}
       <TopTenCarousel />
@@ -129,20 +140,15 @@ export default function Home() {
       {/* Most Discussed This Week */}
       <MostDiscussedRow />
 
+      {/* Community Banner */}
+      <CommunityBanner />
+
       {/* Dynamic Genre & Category Rows */}
       {categoryRows.map((catRow) => (
         <MediaRow key={catRow.title} title={catRow.title} items={catRow.items} />
       ))}
 
-      {/* Trending Discussions Row (Structurally built, empty if no backend endpoint exists) */}
-      <section className="my-8 p-6 bg-black/40 border border-white/8 rounded-2xl">
-        <h2 className="font-heading text-xl text-white mb-2">Trending Discussions</h2>
-        <p className="font-mono text-xs text-gray/50">
-          No live forum endpoint active. Post comments on movie pages to participate!
-        </p>
-      </section>
-
-      {/* Community Banner */}
+      {/* Community Banner (At the end of page) */}
       <CommunityBanner />
     </main>
   );

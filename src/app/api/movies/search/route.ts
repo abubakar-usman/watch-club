@@ -8,7 +8,7 @@ const movieProvider: MovieProvider = getMovieProvider();
 export const GET = withRepositoryAuth({ auth: "none" }, async (req) => {
   try {
     const { searchParams } = new URL(req.url);
-    const query = searchParams.get("query");
+    const query = searchParams.get("query") || searchParams.get("q");
     const pageStr = searchParams.get("page") || "1";
     const page = parseInt(pageStr, 10) || 1;
 

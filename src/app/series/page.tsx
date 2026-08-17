@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import HeroBanner from "@/components/HeroBanner";
 import MediaRow, { MediaItem } from "@/components/MediaRow";
 
 export default function SeriesPage() {
@@ -64,8 +65,11 @@ export default function SeriesPage() {
   }, []);
 
   return (
-    <main style={{ padding: "1rem" }} className="space-y-8">
-      <div className="flex items-center gap-3 pt-4">
+    <main style={{ padding: "0 1rem" }} className="space-y-8">
+      {/* Top Trending Series Hero Banner */}
+      <HeroBanner type="series" />
+
+      <div className="flex items-center gap-3 pt-2">
         <div className="w-1 h-7 rounded-full bg-brand-red" />
         <h1 className="font-heading text-3xl text-white">TV Series Catalog</h1>
       </div>

@@ -6,11 +6,22 @@ const movieProvider = getMovieProvider();
 
 export const GET = withRepositoryAuth(
   { auth: "none" },
-  async (_req, ctx) => {
+  async (req) => {
     try {
-      console.log("[API HIT] GET /api/movies/trending");
+      const { searchParams } = new URL(req.url);
+      const type = searchParams.get("type");
+
+      console.log(`[API HIT] GET /api/movies/trending?type=${type || "all"}`);
       const providerData = await movieProvider.fetchTrending("day", 1, 45);
-      const finalMovies = (providerData.results || []).slice(0, 45);
+      let finalMovies = providerData.results || [];
+
+      if (type && type !== "all") {
+        finalMovies = finalMovies.filter(
+          (m: { type?: string; statusBadge?: string }) =>
+            m.type?.toLowerCase() === type.toLowerCase() ||
+            m.statusBadge?.toLowerCase() === type.toLowerCase()
+        );
+      }
 
       return NextResponse.json({
         page: 1,
