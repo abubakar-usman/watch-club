@@ -6,6 +6,7 @@ import TopTenCarousel from "@/components/TopTenCarousel";
 import MediaRow, { MediaItem } from "@/components/MediaRow";
 import MostDiscussedRow from "@/components/MostDiscussedRow";
 import CommunityBanner from "@/components/CommunityBanner";
+import WatchNextBanner from "@/components/watchNextBanner";
 
 interface MovieApiItem {
   id: string | number;
@@ -122,8 +123,8 @@ export default function Home() {
 
   return (
     <main style={{ padding: "0 1rem" }}>
-      {/* Spider-Man: Brand New Day Hero Banner (Live API Search) */}
-      <HeroBanner type="spiderman" />
+      {/* Hero Banner (Featured Item) */}
+      <HeroBanner type="all" />
 
       {/* Top 10 Recommendations For Today */}
       <TopTenCarousel />
@@ -148,8 +149,9 @@ export default function Home() {
         <MediaRow key={catRow.title} title={catRow.title} items={catRow.items} />
       ))}
 
-      {/* Community Banner (At the end of page) */}
-      <CommunityBanner />
+      {/* Watch Next Banner */}
+      <WatchNextBanner />
+
     </main>
   );
 }

@@ -4,6 +4,9 @@ import React, { useRef, useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
+const DEFAULT_POSTER =
+  "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=500&auto=format&fit=crop";
+
 export interface TopTenItem {
   rank: number;
   id?: string | number;
@@ -22,6 +25,41 @@ interface TopTenApiMovie {
   genre_names?: string[];
   genres?: (string | { name: string })[];
   category?: string;
+}
+
+function TopTenCardItem({ item }: { item: TopTenItem }) {
+  const [imgSrc, setImgSrc] = useState<string>(item.image || DEFAULT_POSTER);
+
+  useEffect(() => {
+    setImgSrc(item.image || DEFAULT_POSTER);
+  }, [item.image]);
+
+  return (
+    <Link
+      href={item.id ? `/movie/${item.id}` : "#"}
+      className="top-ten__card-wrapper"
+      draggable={false}
+    >
+      <span className="top-ten__rank">{item.rank}</span>
+
+      <div className="top-ten__poster-card">
+        <Image
+          src={imgSrc}
+          alt={item.title || "Poster"}
+          fill
+          sizes="160px"
+          className="top-ten__poster-image"
+          unoptimized
+          draggable={false}
+          onError={() => setImgSrc(DEFAULT_POSTER)}
+        />
+        <div className="top-ten__card-overlay">
+          <div className="top-ten__movie-title">{item.title}</div>
+          <div className="top-ten__movie-category">{item.category}</div>
+        </div>
+      </div>
+    </Link>
+  );
 }
 
 export default function TopTenCarousel({ items: initialItems }: { items?: TopTenItem[] }) {
@@ -54,7 +92,8 @@ export default function TopTenCarousel({ items: initialItems }: { items?: TopTen
               ? m.poster_path.startsWith("http")
                 ? m.poster_path
                 : `https://image.tmdb.org/t/p/w500${m.poster_path}`
-              : "");
+              : "") ||
+            DEFAULT_POSTER;
 
           let category = "Popular";
           if (Array.isArray(m.genre_names) && m.genre_names.length > 0) {
@@ -223,30 +262,7 @@ export default function TopTenCarousel({ items: initialItems }: { items?: TopTen
           }}
         >
           {items.map((item) => (
-            <Link
-              key={item.id ?? item.rank}
-              href={item.id ? `/movie/${item.id}` : "#"}
-              className="top-ten__card-wrapper"
-              draggable={false}
-            >
-              <span className="top-ten__rank">{item.rank}</span>
-
-              <div className="top-ten__poster-card">
-                <Image
-                  src={item.image}
-                  alt={item.title}
-                  fill
-                  sizes="160px"
-                  className="top-ten__poster-image"
-                  unoptimized
-                  draggable={false}
-                />
-                <div className="top-ten__card-overlay">
-                  <div className="top-ten__movie-title">{item.title}</div>
-                  <div className="top-ten__movie-category">{item.category}</div>
-                </div>
-              </div>
-            </Link>
+            <TopTenCardItem key={item.id ?? item.rank} item={item} />
           ))}
         </div>
       )}

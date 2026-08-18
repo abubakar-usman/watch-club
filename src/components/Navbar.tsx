@@ -3,8 +3,15 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { Search, Bell, ChevronDown, X, LogIn, Popcorn } from "lucide-react"; // Added Popcorn icon
+import { useRouter, usePathname } from "next/navigation";
+import {
+  Search,
+  Bell,
+  ChevronDown,
+  X,
+  LogIn,
+  Menu,
+} from "lucide-react";
 
 const genres = [
   "Action",
@@ -23,17 +30,17 @@ const genres = [
   "Western",
 ];
 
-interface NavbarProps {
-  activePath?: string;
-}
-
-export default function Navbar({ activePath = "/" }: NavbarProps) {
+export default function Navbar() {
   const router = useRouter();
+  // Auto-detects the current route — no need to pass activePath from every page
+  const activePath = usePathname();
+
   const [isGenreOpen, setIsGenreOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notificationRef = useRef<HTMLDivElement>(null);
@@ -41,15 +48,26 @@ export default function Navbar({ activePath = "/" }: NavbarProps) {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsGenreOpen(false);
       }
-      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target as Node)
+      ) {
         setIsNotificationOpen(false);
       }
     }
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   useEffect(() => {
@@ -66,12 +84,22 @@ export default function Navbar({ activePath = "/" }: NavbarProps) {
     { name: "About Us", href: "/about" },
   ];
 
+  const handleMobileLinkClick = () => {
+    setIsMobileMenuOpen(false);
+    setIsGenreOpen(false);
+  };
+
   return (
     <header className="navbar__header">
       <div className="navbar__container">
-        {/* Left Section: Logo only */}
+
+        {/* LEFT: LOGO */}
         <div className="navbar__left">
-          <Link href="/" className="navbar__logo-link" aria-label="WatchClub Home">
+          <Link
+            href="/"
+            className="navbar__logo-link"
+            aria-label="WatchClub Home"
+          >
             <Image
               src="/bglogo.png"
               alt="WatchClub Logo"
@@ -83,17 +111,27 @@ export default function Navbar({ activePath = "/" }: NavbarProps) {
           </Link>
         </div>
 
-        {/* Center Section: Main Navigation (Links Only) */}
+        {/* CENTER: DESKTOP NAVIGATION */}
         <div className="navbar__center">
           <nav>
             <ul className="navbar__nav-list">
               {navLinks.map((link) => {
-                const isActive = activePath === link.href;
+                const isActive =
+                  link.href === "/"
+                    ? activePath === "/"
+                    : activePath?.startsWith(link.href);
+
                 return (
-                  <li key={link.name} className="navbar__nav-item">
+                  <li
+                    key={link.name}
+                    className="navbar__nav-item"
+                  >
                     <Link
                       href={link.href}
-                      className={`navbar__nav-link${isActive ? " navbar__nav-link--active" : ""}`}
+                      className={`navbar__nav-link${isActive
+                        ? " navbar__nav-link--active"
+                        : ""
+                        }`}
                     >
                       {link.name}
                     </Link>
@@ -104,23 +142,32 @@ export default function Navbar({ activePath = "/" }: NavbarProps) {
           </nav>
         </div>
 
-        {/* Right Section: Grouped Icons/Dropdowns */}
+        {/* RIGHT: ACTIONS */}
         <div className="navbar__right">
 
-          {/* 1. Genre Dropdown (Moved here) */}
-          <div className="navbar__dropdown-wrapper" ref={dropdownRef}>
+          {/* GENRE DROPDOWN */}
+          <div
+            className="navbar__dropdown-wrapper"
+            ref={dropdownRef}
+          >
             <button
               type="button"
-              className={`navbar__dropdown-trigger${isGenreOpen ? " navbar__dropdown-trigger--active" : ""}`}
+              className={`navbar__dropdown-trigger${isGenreOpen
+                ? " navbar__dropdown-trigger--active"
+                : ""
+                }`}
               onClick={() => setIsGenreOpen(!isGenreOpen)}
               aria-expanded={isGenreOpen}
               aria-label="Toggle Genre dropdown"
-              style={{ fontSize: '0.9rem', marginRight: '4px' }} // Tightened spacing
             >
               <span>Genre</span>
+
               <ChevronDown
                 size={14}
-                className={`navbar__dropdown-chevron${isGenreOpen ? " navbar__dropdown-chevron--open" : ""}`}
+                className={`navbar__dropdown-chevron${isGenreOpen
+                  ? " navbar__dropdown-chevron--open"
+                  : ""
+                  }`}
               />
             </button>
 
@@ -140,28 +187,46 @@ export default function Navbar({ activePath = "/" }: NavbarProps) {
             )}
           </div>
 
-          {/* 2. Search Icon */}
+          {/* SEARCH */}
           <div className="navbar__search-wrapper">
             {isSearchOpen ? (
               <div className="navbar__search-input-container">
-                <Search size={16} className="navbar__search-icon-inside" />
+                <Search
+                  size={16}
+                  className="navbar__search-icon-inside"
+                />
+
                 <input
                   ref={searchInputRef}
                   type="text"
                   placeholder="Search..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) =>
+                    setSearchQuery(e.target.value)
+                  }
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" && searchQuery.trim()) {
-                      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+                    if (
+                      e.key === "Enter" &&
+                      searchQuery.trim()
+                    ) {
+                      router.push(
+                        `/search?q=${encodeURIComponent(
+                          searchQuery.trim()
+                        )}`
+                      );
                     }
                   }}
                   className="navbar__search-input"
                 />
+
                 <button
                   type="button"
-                  onClick={() => { setIsSearchOpen(false); setSearchQuery(""); }}
+                  onClick={() => {
+                    setIsSearchOpen(false);
+                    setSearchQuery("");
+                  }}
                   className="navbar__clear-search"
+                  aria-label="Close search"
                 >
                   <X size={14} />
                 </button>
@@ -178,8 +243,11 @@ export default function Navbar({ activePath = "/" }: NavbarProps) {
             )}
           </div>
 
-          {/* 3. Notification Icon */}
-          <div className="navbar__notif-wrapper" ref={notificationRef}>
+          {/* NOTIFICATIONS */}
+          <div
+            className="navbar__notif-wrapper"
+            ref={notificationRef}
+          >
             <button
               type="button"
               className="navbar__icon-btn"
@@ -190,7 +258,10 @@ export default function Navbar({ activePath = "/" }: NavbarProps) {
               aria-label="View notifications"
             >
               <Bell size={20} />
-              {unreadNotifications && <span className="navbar__badge" />}
+
+              {unreadNotifications && (
+                <span className="navbar__badge" />
+              )}
             </button>
 
             {isNotificationOpen && (
@@ -198,25 +269,118 @@ export default function Navbar({ activePath = "/" }: NavbarProps) {
                 <div className="navbar__notif-header">
                   <span>Notifications</span>
                 </div>
-                <div style={{ padding: "1rem", textAlign: "center", fontSize: "0.75rem", color: "var(--text-muted)" }}>
+
+                <div
+                  style={{
+                    padding: "1rem",
+                    textAlign: "center",
+                    fontSize: "0.75rem",
+                    color: "var(--text-muted)",
+                  }}
+                >
                   No new notifications.
                 </div>
               </div>
             )}
           </div>
 
-          {/* 4. Popcorn Icon */}
-          <button type="button" className="navbar__icon-btn" aria-label="Popcorn">
-            <Popcorn size={20} />
-          </button>
-
-          {/* Login CTA */}
-          <Link href="/login" className="navbar__login-btn" style={{ marginLeft: '8px' }}>
+          {/* LOGIN */}
+          <Link
+            href="/login"
+            className="navbar__login-btn"
+          >
             <LogIn size={16} />
             <span>Login</span>
           </Link>
+
+          {/* MOBILE HAMBURGER */}
+          <button
+            type="button"
+            className="navbar__mobile-menu-btn"
+            onClick={() =>
+              setIsMobileMenuOpen(!isMobileMenuOpen)
+            }
+            aria-label="Toggle navigation menu"
+            aria-expanded={isMobileMenuOpen}
+          >
+            {isMobileMenuOpen ? (
+              <X size={23} />
+            ) : (
+              <Menu size={23} />
+            )}
+          </button>
         </div>
       </div>
+
+      {/* MOBILE NAVIGATION MENU */}
+      {isMobileMenuOpen && (
+        <div className="navbar__mobile-menu">
+          <nav>
+            <ul className="navbar__mobile-nav-list">
+
+              {navLinks.map((link) => {
+                const isActive =
+                  link.href === "/"
+                    ? activePath === "/"
+                    : activePath?.startsWith(link.href);
+
+                return (
+                  <li key={link.name}>
+                    <Link
+                      href={link.href}
+                      onClick={handleMobileLinkClick}
+                      className={`navbar__mobile-nav-link${isActive
+                        ? " navbar__mobile-nav-link--active"
+                        : ""
+                        }`}
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                );
+              })}
+
+              {/* MOBILE GENRE */}
+              <li>
+                <button
+                  type="button"
+                  className="navbar__mobile-genre-btn"
+                  onClick={() =>
+                    setIsGenreOpen(!isGenreOpen)
+                  }
+                >
+                  <span>Genre</span>
+
+                  <ChevronDown
+                    size={16}
+                    className={
+                      isGenreOpen
+                        ? "navbar__dropdown-chevron--open"
+                        : ""
+                    }
+                  />
+                </button>
+
+                {isGenreOpen && (
+                  <div className="navbar__mobile-genres">
+                    {genres.map((genre) => (
+                      <Link
+                        key={genre}
+                        href={`/genre/${genre.toLowerCase()}`}
+                        onClick={handleMobileLinkClick}
+                        className="navbar__mobile-genre-item"
+                      >
+                        {genre}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </li>
+
+            </ul>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }

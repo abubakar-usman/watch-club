@@ -24,6 +24,16 @@ export interface Movie {
   category?: string;
   type?: "movie" | "series";
   statusBadge?: string;
+  creators?: string[];
+  episodes?: number | string;
+  seasons?: number | string;
+  runtime?: string;
+  country?: string;
+  network?: string;
+  status?: string;
+  language?: string;
+  alsoKnownAs?: string;
+  award?: string;
 }
 
 export interface MovieSearchResult {

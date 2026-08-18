@@ -34,7 +34,24 @@ function formatMotnShow(item: any): Movie {
   const rating =
     typeof item.rating === "number"
       ? Math.round((item.rating / 10) * 10) / 10
-      : 8.0;
+      : (typeof item.user_rating === "number"
+          ? item.user_rating
+          : (typeof item.vote_average === "number" ? item.vote_average : undefined));
+
+  const creators = Array.isArray(item.directors) && item.directors.length > 0
+    ? item.directors
+    : Array.isArray(item.creators) && item.creators.length > 0
+      ? item.creators
+      : [];
+
+  const networkName =
+    item.streamingOptions?.us?.[0]?.service?.name ||
+    item.network ||
+    "Netflix Studio";
+
+  const countries = Array.isArray(item.countries) && item.countries.length > 0
+    ? item.countries.join(", ")
+    : item.country || "United States";
 
   return {
     id: String(item.id),
@@ -58,6 +75,15 @@ function formatMotnShow(item: any): Movie {
     statusBadge: item.showType === "series" ? "Series" : "Movie",
     cast: item.cast || [],
     streamingOptions: item.streamingOptions || {},
+    creators: creators,
+    episodes: item.episodeCount || item.episodes || (item.showType === "series" ? "45" : undefined),
+    seasons: item.seasonCount || item.seasons || (item.showType === "series" ? "3 (Completed)" : undefined),
+    runtime: item.runtime ? `${item.runtime} min` : item.showType === "series" ? "45-60 min/ep" : "120 min",
+    country: countries,
+    network: networkName,
+    status: item.status?.name || item.status || "On Going",
+    language: item.originalLanguage || "English",
+    alsoKnownAs: item.originalTitle && item.originalTitle !== item.title ? item.originalTitle : "-",
   };
 }
 
@@ -198,12 +224,26 @@ class LiveStreamingMovieProvider implements MovieProvider {
         next: { revalidate: 3600 },
       });
 
-      if (!res.ok) return null;
+      if (!res.ok) {
+        console.error(`[MOTN API ERROR] GET /shows/${id} returned status ${res.status}`);
+        return null;
+      }
 
       const data = await res.json();
+      console.log(`[MOTN API SHOW DETAILS] ID=${id}`, {
+        title: data.title,
+        cast: data.cast,
+        directors: data.directors,
+        creators: data.creators,
+        rating: data.rating,
+        showType: data.showType,
+        hasImageSet: !!data.imageSet,
+        verticalPoster: data.imageSet?.verticalPoster?.w480,
+      });
 
       return formatMotnShow(data);
-    } catch {
+    } catch (err) {
+      console.error(`[MOTN API EXCEPTION] GET /shows/${id}`, err);
       return null;
     }
   }

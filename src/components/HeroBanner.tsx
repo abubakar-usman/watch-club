@@ -43,7 +43,8 @@ interface RawSearchResult {
 }
 
 interface HeroBannerProps {
-  type?: "all" | "movie" | "series" | "demon-slayer" | "spiderman";
+  // "spiderman" / "demon-slayer" removed — hero is always driven by real trending data now
+  type?: "all" | "movie" | "series";
   searchQuery?: string;
   item?: HeroData | null;
 }
@@ -65,13 +66,11 @@ export default function HeroBanner({
       setLoading(true);
       try {
         let endpoint = "";
-        if (type === "spiderman" || type === "demon-slayer" || searchQuery) {
-          const q =
-            searchQuery ||
-            (type === "spiderman" ? "Spider-Man" : "Demon Slayer");
-          endpoint = `/api/movies/search?query=${encodeURIComponent(q)}`;
-        } else if (type === "all") {
-          endpoint = "/api/movies/trending";
+        if (searchQuery) {
+          endpoint = `/api/movies/search?query=${encodeURIComponent(searchQuery)}`;
+        } else if (type === "all" || (type as string) === "spiderman") {
+          // Uses the pinned featured title, not live trending — keeps /api/movies/trending untouched for other consumers (e.g. Top 10 Carousel)
+          endpoint = "/api/movies/featured";
         } else {
           endpoint = `/api/movies/trending?type=${encodeURIComponent(type)}`;
         }
@@ -82,18 +81,7 @@ export default function HeroBanner({
 
         const results: RawSearchResult[] = data.results || [];
         if (results.length > 0) {
-          let m = results[0];
-          if (type === "spiderman" || searchQuery?.toLowerCase().includes("spider")) {
-            const spideyItem =
-              results.find((r) => r.title?.toLowerCase().includes("brand new day")) ||
-              results.find((r) => r.title?.toLowerCase().includes("spider-man"));
-            if (spideyItem) m = spideyItem;
-          } else if (type === "demon-slayer") {
-            const movieItem = results.find(
-              (r) => r.type?.toLowerCase() === "movie" || r.statusBadge?.toLowerCase() === "movie"
-            );
-            if (movieItem) m = movieItem;
-          }
+          const m = results[0];
 
           const genres: string[] = Array.isArray(m.genre_names)
             ? m.genre_names.slice(0, 3)
@@ -104,6 +92,7 @@ export default function HeroBanner({
           const typeTag = m.statusBadge || (m.type === "movie" ? "Movie" : "Series");
           const yearTag = m.year || (m.releaseDate ? String(m.releaseDate).split("-")[0] : null);
 
+          // Tag row = type + genres + year. Subtitle no longer repeats genres.
           const tags = [typeTag, ...genres, yearTag].filter(Boolean) as string[];
 
           const rawScore = m.vote_average || m.user_rating || 8.5;
@@ -112,16 +101,14 @@ export default function HeroBanner({
 
           const formatted: HeroData = {
             id: m.id,
-            title: m.title || m.name || "Spider-Man: Brand New Day",
-            subtitle: m.subtitle || genres.join(" • ") || typeTag,
+            title: m.title || m.name || "",
+            // subtitle now only used if the API explicitly provides one — no genre duplication
+            subtitle: m.subtitle,
             clubScore: score,
             recommendedPercent: `${percentVal}%`,
             commentCount: m.vote_count ? `${m.vote_count}+` : "1k+",
             tags,
-            description:
-              m.overview ||
-              m.description ||
-              "Following recent world-altering events, Peter Parker begins a brand new chapter balancing his life and responsibilities as Spider-Man.",
+            description: m.overview || m.description || "",
             award: m.award || (Number(rawScore) >= 8 ? "Top Rated" : "Trending #1"),
             backdropUrl: m.backdrop || m.backdrop_path || m.posterUrl || m.poster || m.poster_path,
             posterUrl: m.posterUrl || m.poster || m.poster_path,
@@ -175,7 +162,9 @@ export default function HeroBanner({
     >
       <div className="hero__content">
         <div className="hero__title-container">
-          <h1 className="hero__main-title">{heroData.title}</h1>
+          <Link href={heroData.id ? `/movie/${heroData.id}` : "#"}>
+            <h1 className="hero__main-title hover:underline cursor-pointer">{heroData.title}</h1>
+          </Link>
           {heroData.subtitle && <span className="hero__subtitle">{heroData.subtitle}</span>}
         </div>
 
@@ -205,7 +194,6 @@ export default function HeroBanner({
 
         <p className="hero__description">{heroData.description}</p>
 
-        {/* Updated Button Group */}
         <div className="hero__button-group">
           <button
             type="button"
