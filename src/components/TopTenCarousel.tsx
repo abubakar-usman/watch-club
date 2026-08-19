@@ -37,25 +37,34 @@ function TopTenCardItem({ item }: { item: TopTenItem }) {
   return (
     <Link
       href={item.id ? `/movie/${item.id}` : "#"}
-      className="top-ten__card-wrapper"
       draggable={false}
+      className="relative flex-none w-[175px] flex items-end cursor-pointer select-none group"
     >
-      <span className="top-ten__rank">{item.rank}</span>
+      {/* Rank number — outlined */}
+      <span
+        className="absolute left-[-15px] bottom-[-15px] text-[7.5rem] font-black leading-[0.8] text-black pointer-events-none z-[1] transition-all duration-150"
+        style={{ WebkitTextStroke: "3px #555555" }}
+      >
+        {item.rank}
+      </span>
 
-      <div className="top-ten__poster-card">
+      {/* Poster card */}
+      <div className="relative w-[155px] h-[225px] ml-auto rounded-2xl overflow-hidden bg-[#333333] border-none shadow-[0_6px_18px_rgba(0,0,0,0.5)] z-[2] transition-all duration-250 group-hover:-translate-y-1.5 group-hover:shadow-[0_12px_28px_rgba(0,0,0,0.7)] max-[768px]:w-[130px] max-[768px]:h-[190px]">
         <Image
           src={imgSrc}
           alt={item.title || "Poster"}
           fill
           sizes="160px"
-          className="top-ten__poster-image"
+          className="object-cover rounded-2xl transition-opacity duration-150"
           unoptimized
           draggable={false}
           onError={() => setImgSrc(DEFAULT_POSTER)}
         />
-        <div className="top-ten__card-overlay">
-          <div className="top-ten__movie-title">{item.title}</div>
-          <div className="top-ten__movie-category">{item.category}</div>
+
+        {/* Hover overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex flex-col justify-end p-3">
+          <div className="text-[0.875rem] font-bold text-white mb-0.5 truncate">{item.title}</div>
+          <div className="text-[0.75rem] text-[#CCCCCC]">{item.category}</div>
         </div>
       </div>
     </Link>
@@ -187,13 +196,16 @@ export default function TopTenCarousel({ items: initialItems }: { items?: TopTen
   };
 
   return (
-    <section className="top-ten__section">
-      <div className="top-ten__header">
-        <h2 className="top-ten__title">Top 10 Recommendations For Today</h2>
+    <section className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-5">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-[20px] font-semibold leading-[1.2] text-white capitalize">
+          Top 10 Recommendations For Today
+        </h2>
 
-        {/* Dynamic Dash Progress Indicator (Replaces Arrows) */}
+        {/* Dynamic Dash Progress Indicator */}
         {!loading && items.length > 0 && dashCount > 1 && (
-          <div className="dash-indicator" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <div className="flex items-center gap-1.5">
             {Array.from({ length: dashCount }).map((_, i) => (
               <button
                 key={i}
@@ -204,7 +216,7 @@ export default function TopTenCarousel({ items: initialItems }: { items?: TopTen
                   width: i === activeIndex ? "24px" : "14px",
                   height: "4px",
                   borderRadius: "2px",
-                  backgroundColor: i === activeIndex ? "var(--accent-white, #FFFFFF)" : "rgba(255,255,255,0.2)",
+                  backgroundColor: i === activeIndex ? "#FFFFFF" : "rgba(255,255,255,0.2)",
                   border: "none",
                   padding: 0,
                   cursor: "pointer",
@@ -217,39 +229,20 @@ export default function TopTenCarousel({ items: initialItems }: { items?: TopTen
       </div>
 
       {loading ? (
-        <div style={{ display: "flex", gap: "1rem", overflow: "hidden", padding: "1rem 0" }}>
+        <div className="flex gap-4 overflow-hidden py-4">
           {[1, 2, 3, 4, 5].map((i) => (
             <div
               key={i}
-              style={{
-                width: "160px",
-                height: "240px",
-                background: "rgba(255,255,255,0.05)",
-                borderRadius: "var(--radius-lg)",
-                flexShrink: 0,
-                animation: "pulse 1.5s ease-in-out infinite",
-              }}
+              className="w-[160px] h-[240px] bg-white/5 rounded-2xl flex-shrink-0 animate-pulse"
             />
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div
-          style={{
-            background: "rgba(0,0,0,0.3)",
-            border: "1px solid rgba(255,255,255,0.05)",
-            borderRadius: "var(--radius-lg)",
-            padding: "2rem",
-            textAlign: "center",
-            color: "var(--text-muted)",
-            fontFamily: "monospace",
-            fontSize: "0.875rem",
-          }}
-        >
+        <div className="bg-black/30 border border-white/5 rounded-2xl p-8 text-center text-[#999999] font-mono text-sm">
           No recommendations available today.
         </div>
       ) : (
         <div
-          className="top-ten__track"
           ref={trackRef}
           onScroll={handleScroll}
           onMouseDown={handleMouseDown}
@@ -260,6 +253,7 @@ export default function TopTenCarousel({ items: initialItems }: { items?: TopTen
             cursor: isDragging ? "grabbing" : "grab",
             userSelect: isDragging ? "none" : "auto",
           }}
+          className="flex gap-3 overflow-x-auto scroll-smooth pt-4 pb-6 px-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
           {items.map((item) => (
             <TopTenCardItem key={item.id ?? item.rank} item={item} />

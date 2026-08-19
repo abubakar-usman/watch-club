@@ -22,10 +22,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={inter.variable}>
-      <body style={{ backgroundColor: "#282828", margin: 0 }}>
+      <body className="bg-[#181818] text-white antialiased">
         <Navbar />
-        <div id="app-root" style={{ minHeight: "calc(100vh - 72px)", display: "flex", flexDirection: "column", paddingTop: "72px", backgroundColor: "#282828" }}>
-          <div style={{ flex: 1 }}>{children}</div>
+        <div id="app-root" className="min-h-screen flex flex-col pt-[84px] bg-[#181818]">
+          <div className="flex-1 w-full">{children}</div>
           <Footer />
         </div>
       </body>

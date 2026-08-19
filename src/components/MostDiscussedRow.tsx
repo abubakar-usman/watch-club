@@ -75,14 +75,15 @@ export default function MostDiscussedRow({
   };
 
   return (
-    <section className="discussed__section">
-      <div className="discussed__header">
-        <h2 className="discussed__title">Most Discussed This Week</h2>
+    <section className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-[20px] font-semibold leading-[1.2] text-white capitalize">Most Discussed This Week</h2>
 
-        <div className="discussed__controls">
+        <div className="flex items-center gap-2">
           <button
             type="button"
-            className="discussed__nav-btn"
+            className="w-[34px] h-[34px] rounded-full bg-[#333333] border border-white/[0.12] text-white flex items-center justify-center transition-all duration-150 cursor-pointer hover:bg-[#E50914] hover:border-[#E50914] hover:shadow-[0_0_12px_rgba(229,9,20,0.35)]"
             onClick={() => scroll("left")}
             aria-label="Scroll left"
           >
@@ -90,7 +91,7 @@ export default function MostDiscussedRow({
           </button>
           <button
             type="button"
-            className="discussed__nav-btn"
+            className="w-[34px] h-[34px] rounded-full bg-[#333333] border border-white/[0.12] text-white flex items-center justify-center transition-all duration-150 cursor-pointer hover:bg-[#E50914] hover:border-[#E50914] hover:shadow-[0_0_12px_rgba(229,9,20,0.35)]"
             onClick={() => scroll("right")}
             aria-label="Scroll right"
           >
@@ -99,42 +100,57 @@ export default function MostDiscussedRow({
         </div>
       </div>
 
+      {/* Track */}
       {loading ? (
-        <div style={{ display: "flex", gap: "1rem", overflow: "hidden", padding: "1rem 0" }}>
+        <div className="flex gap-4 overflow-hidden py-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} style={{ width: "320px", height: "144px", background: "rgba(255,255,255,0.05)", borderRadius: "var(--radius-lg)", flexShrink: 0, animation: "pulse 1.5s ease-in-out infinite" }} />
+            <div
+              key={i}
+              className="w-[320px] h-[144px] bg-white/5 rounded-2xl flex-shrink-0 animate-pulse"
+            />
           ))}
         </div>
       ) : threads.length === 0 ? (
-        <div style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "var(--radius-lg)", padding: "2rem", textAlign: "center", color: "var(--text-muted)", fontFamily: "monospace", fontSize: "0.875rem" }}>
+        <div className="bg-black/30 border border-white/5 rounded-2xl p-8 text-center text-[#999999] font-mono text-sm">
           No discussions yet for this week.
         </div>
       ) : (
-        <div className="discussed__track" ref={trackRef}>
+        <div
+          ref={trackRef}
+          className="flex gap-5 overflow-x-auto scroll-smooth pb-4 pt-2 px-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        >
           {threads.map((thread) => (
-            <Link key={thread.id} href={`/movie/${thread.id}#discussion`} className="discussed__card">
-              <div className="discussed__thumbnail-wrapper">
+            <Link
+              key={thread.id}
+              href={`/movie/${thread.id}#discussion`}
+              className="flex-none w-[360px] bg-[#333333] border border-white/[0.12] rounded-xl p-[0.85rem] flex gap-4 items-center cursor-pointer shadow-[0_6px_16px_rgba(0,0,0,0.5)] transition-all duration-250 hover:-translate-y-1 hover:border-[#E50914] hover:shadow-[0_12px_24px_rgba(0,0,0,0.8),0_0_18px_rgba(229,9,20,0.35)] max-[768px]:w-[300px] group"
+            >
+              {/* Thumbnail */}
+              <div className="relative w-[110px] h-[110px] rounded-lg overflow-hidden flex-shrink-0 max-[768px]:w-[90px] max-[768px]:h-[90px]">
                 <Image
                   src={thread.image}
                   alt={thread.title}
                   fill
                   unoptimized
                   sizes="110px"
-                  className="discussed__thumbnail"
+                  className="object-cover"
                 />
               </div>
 
-              <div className="discussed__content">
-                <div className="discussed__thread-title">{thread.title}</div>
+              {/* Content */}
+              <div className="flex flex-col gap-2 flex-1 min-w-0">
+                <div className="text-[0.95rem] font-bold text-white leading-[1.3] line-clamp-2">
+                  {thread.title}
+                </div>
 
-                <div className="discussed__meta-row">
-                  <MessageSquare size={14} className="discussed__comment-icon" />
+                <div className="flex items-center gap-1.5 text-[0.8rem] text-[#E50914] font-semibold">
+                  <MessageSquare size={14} className="text-[#E50914]" />
                   <span>{thread.commentCount}</span>
                 </div>
 
-                <div className="discussed__stats-row">
+                <div className="flex items-center gap-3 mt-0.5">
                   {thread.avatars && thread.avatars.length > 0 && (
-                    <div className="discussed__avatar-group">
+                    <div className="flex items-center">
                       {thread.avatars.map((url, idx) => (
                         <Image
                           key={idx}
@@ -142,12 +158,12 @@ export default function MostDiscussedRow({
                           alt="User avatar"
                           width={24}
                           height={24}
-                          className="discussed__avatar"
+                          className="w-6 h-6 rounded-full border-2 border-[#333333] -ml-2 first:ml-0 object-cover"
                         />
                       ))}
                     </div>
                   )}
-                  <span className="discussed__participant-count">
+                  <span className="text-[0.75rem] font-bold text-[#E50914] ml-1">
                     {thread.participantsCount}
                   </span>
                 </div>

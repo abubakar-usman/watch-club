@@ -122,7 +122,6 @@ export default function MovieDetailPage() {
       setNotFoundState(false);
 
       try {
-        // Fetch movie detail from /api/movies/[id] endpoint
         const res = await fetch(`/api/movies/${encodeURIComponent(rawId)}`);
         if (res.ok) {
           const data = await res.json();
@@ -133,7 +132,6 @@ export default function MovieDetailPage() {
             setNotFoundState(true);
           }
         } else {
-          // Fallback check from trending list if direct endpoint returns error
           const trendingRes = await fetch("/api/movies/trending");
           if (trendingRes.ok) {
             const trData = await trendingRes.json();
@@ -148,7 +146,6 @@ export default function MovieDetailPage() {
           }
         }
 
-        // Fetch "You May Also Like" recommendations
         const recRes = await fetch("/api/movies/trending");
         if (recRes.ok) {
           const recData = await recRes.json();
@@ -221,15 +218,15 @@ export default function MovieDetailPage() {
 
   if (loading) {
     return (
-      <main className="detail-page detail-page--loading">
-        <div className="detail-hero__skeleton" />
-        <div className="detail-layout">
-          <div className="detail-layout__main">
-            <div className="detail-skeleton-card" />
-            <div className="detail-skeleton-card" />
+      <main className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-16 flex flex-col gap-10 min-h-[70vh] justify-center">
+        <div className="w-full h-[420px] bg-[#333333] rounded-2xl animate-pulse" />
+        <div className="grid grid-cols-[1fr_360px] gap-8 items-start max-[1024px]:grid-cols-1">
+          <div className="flex flex-col gap-8 min-w-0">
+            <div className="w-full h-[200px] bg-[#333333] rounded-xl animate-pulse" />
+            <div className="w-full h-[200px] bg-[#333333] rounded-xl animate-pulse" />
           </div>
-          <div className="detail-layout__sidebar">
-            <div className="detail-skeleton-card" />
+          <div className="flex flex-col gap-8">
+            <div className="w-full h-[200px] bg-[#333333] rounded-xl animate-pulse" />
           </div>
         </div>
       </main>
@@ -238,18 +235,18 @@ export default function MovieDetailPage() {
 
   if (notFoundState || !movie) {
     return (
-      <main className="detail-page detail-page--empty">
-        <div className="detail-empty-card">
-          <div className="detail-empty-icon">🎬</div>
-          <h1 className="detail-empty-title">Title Not Found</h1>
-          <p className="detail-empty-text">
+      <main className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-16 flex flex-col gap-10 min-h-[70vh] justify-center">
+        <div className="bg-[#333333] border border-white/22 rounded-2xl p-16 text-center max-w-[550px] mx-auto">
+          <div className="text-6xl mb-4">🎬</div>
+          <h1 className="text-3xl font-bold mb-2 text-white">Title Not Found</h1>
+          <p className="text-[#999999] text-base mb-8">
             We couldn&apos;t find a movie or series matching ID &quot;{rawId}&quot;. It may have been removed or the link might be incorrect.
           </p>
-          <div className="detail-empty-actions">
-            <Link href="/" className="detail-empty-btn detail-empty-btn--primary">
+          <div className="flex justify-center gap-4">
+            <Link href="/" className="px-6 py-3 rounded-xl font-semibold text-sm bg-[#E50914] text-white hover:bg-[#F40612] transition-colors">
               Back to Home
             </Link>
-            <Link href="/search" className="detail-empty-btn detail-empty-btn--secondary">
+            <Link href="/search" className="px-6 py-3 rounded-xl font-semibold text-sm bg-white/10 text-white hover:bg-white/20 transition-colors">
               Search Titles
             </Link>
           </div>
@@ -277,7 +274,6 @@ export default function MovieDetailPage() {
   const clubScore = rawScore !== null && rawScore !== undefined ? Number(rawScore).toFixed(1) : "N/A";
   const recommendedPercent = rawScore !== null && rawScore !== undefined ? Math.min(99, Math.round((Number(rawScore) / 10) * 100)) : null;
 
-  // Real cast members strictly from API
   const castList = Array.isArray(movie.cast) ? movie.cast : [];
 
   const creatorsText = movie.creators && movie.creators.length > 0
@@ -292,59 +288,59 @@ export default function MovieDetailPage() {
     : "-";
 
   return (
-    <main className="detail-page">
+    <main className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-16 flex flex-col gap-10 text-white">
 
-      {/* ── HERO BANNER (FULL BLEED BACKDROP) ────────────────────────── */}
+      {/* HERO BANNER */}
       <section
-        className="detail-hero"
+        className="relative rounded-2xl overflow-hidden border border-white/12 min-h-[440px] bg-cover bg-center flex items-center p-10 shadow-[0_12px_40px_rgba(0,0,0,0.5)] max-[768px]:p-6 max-[768px]:min-h-0"
         style={{
           backgroundImage: `linear-gradient(to right, rgba(20,20,20,0.95) 20%, rgba(20,20,20,0.7) 60%, rgba(20,20,20,0.45) 100%), url("${backdropImage}")`,
         }}
       >
-        <div className="detail-hero__content">
+        <div className="relative z-10 grid grid-cols-[240px_1fr] gap-10 items-center w-full max-[1024px]:grid-cols-[180px_1fr] max-[1024px]:gap-7 max-[768px]:grid-cols-1 max-[768px]:text-center">
 
           {/* Left Poster Image */}
-          <div className="detail-hero__poster-wrapper">
+          <div className="relative w-[240px] aspect-[2/3] rounded-xl overflow-hidden border border-white/22 shadow-[0_15px_35px_rgba(0,0,0,0.7)] shrink-0 max-[1024px]:w-[180px] max-[768px]:mx-auto max-[768px]:w-[160px]">
             <Image
               src={posterImage}
               alt={movie.title}
               fill
               unoptimized
-              className="detail-hero__poster"
+              className="object-cover"
             />
           </div>
 
           {/* Right Header Content */}
-          <div className="detail-hero__meta">
+          <div className="flex flex-col gap-5">
 
             {/* Badges Row */}
-            <div className="detail-hero__badge-row">
-              <span className="detail-hero__badge detail-hero__badge--featured">
+            <div className="flex items-center gap-3 flex-wrap max-[768px]:justify-center">
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.5 rounded-md bg-[#E50914] text-white">
                 Featured
               </span>
-              <div className="detail-hero__badge detail-hero__badge--score">
-                <Star size={14} className="detail-hero__star-icon" />
-                <span className="detail-hero__score-value">{clubScore !== "N/A" ? `${clubScore}/10` : "N/A"}</span>
-                <span className="detail-hero__score-label">Club Score</span>
+              <div className="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.5 rounded-md bg-black/65 backdrop-blur-md border border-white/22 text-white">
+                <Star size={14} className="text-[#fbbf24] fill-[#fbbf24]" />
+                <span className="font-bold">{clubScore !== "N/A" ? `${clubScore}/10` : "N/A"}</span>
+                <span className="text-[#999999] font-normal">Club Score</span>
               </div>
             </div>
 
             {/* Title */}
-            <h1 className="detail-hero__title">
+            <h1 className="text-5xl font-black leading-tight uppercase tracking-tight text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.7)] max-[1024px]:text-4xl max-[768px]:text-3xl">
               {movie.title}
             </h1>
 
             {/* Subtitle / CTA Description */}
-            <p className="detail-hero__subtitle">
+            <p className="text-[#CCCCCC] text-base max-w-[600px] leading-normal">
               Add to watchlist and join the discussion box for this {movie.type === "movie" ? "movie" : "series"}.
             </p>
 
             {/* Action Buttons */}
-            <div className="detail-hero__action-row">
+            <div className="flex items-center gap-4 flex-wrap pt-2 max-[768px]:justify-center">
               <button
                 type="button"
                 onClick={() => setInWatchlist(!inWatchlist)}
-                className={`detail-hero__btn detail-hero__btn--watchlist ${inWatchlist ? "detail-hero__btn--active" : ""}`}
+                className={`inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full text-[0.95rem] font-semibold no-underline cursor-pointer transition-all duration-150 bg-[#E50914] text-white shadow-[0_6px_20px_rgba(229,9,20,0.35)] hover:bg-[#F40612] hover:-translate-y-0.5`}
               >
                 {inWatchlist ? (
                   <>
@@ -354,7 +350,7 @@ export default function MovieDetailPage() {
                 ) : (
                   <>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/play.png" alt="play" className="detail-hero__play-icon" />
+                    <img src="/play.png" alt="play" className="w-4 h-4 object-contain" />
                     <span>Add To Watchlist</span>
                   </>
                 )}
@@ -362,7 +358,7 @@ export default function MovieDetailPage() {
 
               <Link
                 href="#discussion"
-                className="detail-hero__btn detail-hero__btn--community"
+                className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full text-[0.95rem] font-semibold no-underline cursor-pointer transition-all duration-150 bg-white/12 text-white border border-white/22 backdrop-blur-md hover:bg-white/22 hover:-translate-y-0.5"
               >
                 <Users size={18} />
                 <span>Join Community</span>
@@ -375,141 +371,141 @@ export default function MovieDetailPage() {
       </section>
 
 
-      {/* ── METRICS BAR (3 CARDS ROW) ───────────────────────────────────────── */}
-      <section className="detail-stats">
-        <div className="detail-stats__card">
-          <div className="detail-stats__val detail-stats__val--gold">
-            <Star size={20} className="detail-stats__star" />
+      {/* METRICS BAR */}
+      <section className="grid grid-cols-3 gap-5 max-[768px]:grid-cols-1">
+        <div className="bg-[#333333] border border-white/12 rounded-xl p-6 flex flex-col items-center justify-center text-center gap-1.5">
+          <div className="text-2xl font-extrabold flex items-center gap-2 text-white">
+            <Star size={20} className="text-[#fbbf24] fill-[#fbbf24]" />
             <span>{clubScore}</span>
           </div>
-          <span className="detail-stats__label">Club Score</span>
+          <span className="text-sm text-[#999999] font-medium">Club Score</span>
         </div>
 
-        <div className="detail-stats__card">
-          <div className="detail-stats__val detail-stats__val--green">
+        <div className="bg-[#333333] border border-white/12 rounded-xl p-6 flex flex-col items-center justify-center text-center gap-1.5">
+          <div className="text-2xl font-extrabold flex items-center gap-2 text-[#34d399]">
             <ThumbsUp size={20} />
             <span>{recommendedPercent !== null ? `${recommendedPercent}%` : "N/A"}</span>
           </div>
-          <span className="detail-stats__label">Recommended</span>
+          <span className="text-sm text-[#999999] font-medium">Recommended</span>
         </div>
 
-        <div className="detail-stats__card">
-          <div className="detail-stats__val detail-stats__val--blue">
+        <div className="bg-[#333333] border border-white/12 rounded-xl p-6 flex flex-col items-center justify-center text-center gap-1.5">
+          <div className="text-2xl font-extrabold flex items-center gap-2 text-[#38bdf8]">
             <MessageSquare size={20} />
             <span>{movie.vote_count ? `${movie.vote_count}+` : "10K+"}</span>
           </div>
-          <span className="detail-stats__label">Comments</span>
+          <span className="text-sm text-[#999999] font-medium">Comments</span>
         </div>
       </section>
 
 
-      {/* ── MAIN CONTENT GRID: 2 COLUMNS (~65% LEFT, ~35% RIGHT) ─────────────── */}
-      <div className="detail-layout">
+      {/* MAIN CONTENT GRID */}
+      <div className="grid grid-cols-[1fr_360px] gap-8 items-start max-[1024px]:grid-cols-1">
 
-        {/* LEFT COLUMN: Reactions, About, Cast, Comments */}
-        <div className="detail-layout__main">
+        {/* LEFT COLUMN */}
+        <div className="flex flex-col gap-8 min-w-0">
 
-          {/* 1. Reaction Bar ("How Did You Feel About This?") */}
-          <section className="reactions">
-            <h2 className="reactions__title">
+          {/* Reaction Bar */}
+          <section className="bg-[#333333] border border-white/12 rounded-xl p-7 flex flex-col gap-6">
+            <h2 className="text-xl font-bold text-white">
               How Did You Feel About This?
             </h2>
 
             {/* Reaction Buttons */}
-            <div className="reactions__grid">
+            <div className="grid grid-cols-4 gap-4 max-[768px]:grid-cols-2">
               <button
                 type="button"
                 onClick={() => handleReactionClick("like")}
-                className={`reactions__btn reactions__btn--like ${userReaction === "like" ? "reactions__btn--active-like" : ""}`}
+                className={`bg-white/5 border rounded-xl p-4 flex flex-col items-center justify-center gap-1 text-[#CCCCCC] transition-all duration-150 cursor-pointer hover:bg-white/10 hover:text-white ${userReaction === "like" ? "bg-[rgba(229,9,20,0.18)] border-[#E50914] text-white" : "border-white/12"}`}
               >
-                <ThumbsUp size={20} className="reactions__btn-icon" />
-                <span className="reactions__btn-name">Like</span>
-                <span className="reactions__btn-count">{(reactions.like.count / 1000).toFixed(1)}K</span>
+                <ThumbsUp size={20} className="mb-1" />
+                <span className="text-sm font-semibold">Like</span>
+                <span className="text-xs text-[#999999]">{(reactions.like.count / 1000).toFixed(1)}K</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleReactionClick("love")}
-                className={`reactions__btn reactions__btn--love ${userReaction === "love" ? "reactions__btn--active-love" : ""}`}
+                className={`bg-white/5 border rounded-xl p-4 flex flex-col items-center justify-center gap-1 text-[#CCCCCC] transition-all duration-150 cursor-pointer hover:bg-white/10 hover:text-white ${userReaction === "love" ? "bg-[rgba(229,9,20,0.18)] border-[#E50914] text-white" : "border-white/12"}`}
               >
-                <Heart size={20} className="reactions__btn-icon" />
-                <span className="reactions__btn-name">Love</span>
-                <span className="reactions__btn-count">{(reactions.love.count / 1000).toFixed(1)}K</span>
+                <Heart size={20} className="mb-1" />
+                <span className="text-sm font-semibold">Love</span>
+                <span className="text-xs text-[#999999]">{(reactions.love.count / 1000).toFixed(1)}K</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleReactionClick("favorite")}
-                className={`reactions__btn reactions__btn--favorite ${userReaction === "favorite" ? "reactions__btn--active-favorite" : ""}`}
+                className={`bg-white/5 border rounded-xl p-4 flex flex-col items-center justify-center gap-1 text-[#CCCCCC] transition-all duration-150 cursor-pointer hover:bg-white/10 hover:text-white ${userReaction === "favorite" ? "bg-[rgba(229,9,20,0.18)] border-[#E50914] text-white" : "border-white/12"}`}
               >
-                <Bookmark size={20} className="reactions__btn-icon" />
-                <span className="reactions__btn-name">Favorite</span>
-                <span className="reactions__btn-count">{(reactions.favorite.count / 1000).toFixed(1)}K</span>
+                <Bookmark size={20} className="mb-1" />
+                <span className="text-sm font-semibold">Favorite</span>
+                <span className="text-xs text-[#999999]">{(reactions.favorite.count / 1000).toFixed(1)}K</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleReactionClick("dislike")}
-                className={`reactions__btn reactions__btn--dislike ${userReaction === "dislike" ? "reactions__btn--active-dislike" : ""}`}
+                className={`bg-white/5 border rounded-xl p-4 flex flex-col items-center justify-center gap-1 text-[#CCCCCC] transition-all duration-150 cursor-pointer hover:bg-white/10 hover:text-white ${userReaction === "dislike" ? "bg-[rgba(229,9,20,0.18)] border-[#E50914] text-white" : "border-white/12"}`}
               >
-                <ThumbsDown size={20} className="reactions__btn-icon" />
-                <span className="reactions__btn-name">Dislike</span>
-                <span className="reactions__btn-count">{(reactions.dislike.count / 1000).toFixed(1)}K</span>
+                <ThumbsDown size={20} className="mb-1" />
+                <span className="text-sm font-semibold">Dislike</span>
+                <span className="text-xs text-[#999999]">{(reactions.dislike.count / 1000).toFixed(1)}K</span>
               </button>
             </div>
 
             {/* Reaction Bars */}
-            <div className="reactions__bars">
-              <div className="reactions__bar-row">
-                <span className="reactions__bar-label">Like</span>
-                <div className="reactions__bar-track">
-                  <div className="reactions__bar-fill reactions__bar-fill--like" style={{ width: `${reactions.like.percent}%` }} />
+            <div className="flex flex-col gap-3.5 pt-2">
+              <div className="flex items-center gap-4 text-sm font-medium">
+                <span className="w-[70px] text-[#CCCCCC]">Like</span>
+                <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all duration-250 bg-[#34d399]" style={{ width: `${reactions.like.percent}%` }} />
                 </div>
-                <span className="reactions__bar-val">{reactions.like.percent}%</span>
+                <span className="w-[45px] text-right text-[#CCCCCC] font-mono">{reactions.like.percent}%</span>
               </div>
 
-              <div className="reactions__bar-row">
-                <span className="reactions__bar-label">Love</span>
-                <div className="reactions__bar-track">
-                  <div className="reactions__bar-fill reactions__bar-fill--love" style={{ width: `${reactions.love.percent}%` }} />
+              <div className="flex items-center gap-4 text-sm font-medium">
+                <span className="w-[70px] text-[#CCCCCC]">Love</span>
+                <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all duration-250 bg-[#fbbf24]" style={{ width: `${reactions.love.percent}%` }} />
                 </div>
-                <span className="reactions__bar-val">{reactions.love.percent}%</span>
+                <span className="w-[45px] text-right text-[#CCCCCC] font-mono">{reactions.love.percent}%</span>
               </div>
 
-              <div className="reactions__bar-row">
-                <span className="reactions__bar-label">Favorite</span>
-                <div className="reactions__bar-track">
-                  <div className="reactions__bar-fill reactions__bar-fill--favorite" style={{ width: `${reactions.favorite.percent}%` }} />
+              <div className="flex items-center gap-4 text-sm font-medium">
+                <span className="w-[70px] text-[#CCCCCC]">Favorite</span>
+                <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all duration-250 bg-[#f472b6]" style={{ width: `${reactions.favorite.percent}%` }} />
                 </div>
-                <span className="reactions__bar-val">{reactions.favorite.percent}%</span>
+                <span className="w-[45px] text-right text-[#CCCCCC] font-mono">{reactions.favorite.percent}%</span>
               </div>
 
-              <div className="reactions__bar-row">
-                <span className="reactions__bar-label">Dislike</span>
-                <div className="reactions__bar-track">
-                  <div className="reactions__bar-fill reactions__bar-fill--dislike" style={{ width: `${reactions.dislike.percent}%` }} />
+              <div className="flex items-center gap-4 text-sm font-medium">
+                <span className="w-[70px] text-[#CCCCCC]">Dislike</span>
+                <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all duration-250 bg-[#ef4444]" style={{ width: `${reactions.dislike.percent}%` }} />
                 </div>
-                <span className="reactions__bar-val">{reactions.dislike.percent}%</span>
+                <span className="w-[45px] text-right text-[#CCCCCC] font-mono">{reactions.dislike.percent}%</span>
               </div>
             </div>
           </section>
 
 
-          {/* 2. About Section */}
-          <section className="about-section">
-            <h2 className="about-section__title">About</h2>
-            <p className="about-section__text">
+          {/* About Section */}
+          <section className="bg-[#333333] border border-white/12 rounded-xl p-7 flex flex-col gap-4">
+            <h2 className="text-xl font-bold text-white">About</h2>
+            <p className="text-[#CCCCCC] text-[0.95rem] leading-relaxed">
               {movie.overview || "No synopsis available for this title."}
             </p>
           </section>
 
 
-          {/* 3. Cast Row (Horizontally Scrollable Avatar Cards from Real API Data) */}
-          <section className="cast-section">
-            <h2 className="cast-section__title">Cast</h2>
+          {/* Cast Row */}
+          <section className="bg-[#333333] border border-white/12 rounded-xl p-7 flex flex-col gap-5">
+            <h2 className="text-xl font-bold text-white">Cast</h2>
 
             {castList.length > 0 ? (
-              <div className="cast-section__track">
+              <div className="flex gap-5 overflow-x-auto pb-2 [scrollbar-width:none]">
                 {castList.map((member: any, idx: number) => {
                   const actorName = typeof member === "string" ? member : member.name || member.actor || "Actor";
                   const charName = typeof member === "object" ? member.role || member.character || actorName : actorName;
@@ -518,18 +514,18 @@ export default function MovieDetailPage() {
                     : `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80&sig=${idx}`;
 
                   return (
-                    <div key={idx} className="cast-card">
-                      <div className="cast-card__avatar-wrapper">
+                    <div key={idx} className="flex-none w-[110px] flex flex-col items-center text-center gap-2.5">
+                      <div className="relative w-[72px] h-[72px] rounded-full overflow-hidden border-2 border-white/22 bg-black/40">
                         <Image
                           src={avatarSrc}
                           alt={actorName}
                           fill
                           unoptimized
-                          className="cast-card__avatar"
+                          className="object-cover object-top"
                         />
                       </div>
-                      <div className="cast-card__info">
-                        <div className="cast-card__character">{charName}</div>
+                      <div>
+                        <div className="text-sm font-semibold text-white leading-tight">{charName}</div>
                       </div>
                     </div>
                   );
@@ -541,29 +537,29 @@ export default function MovieDetailPage() {
           </section>
 
 
-          {/* 4. Threaded Comments Section */}
-          <section id="discussion" className="comments-section">
-            <div className="comments-section__header">
-              <h2 className="comments-section__title">
-                <MessageSquare size={20} className="comments-section__icon" />
+          {/* Threaded Comments Section */}
+          <section id="discussion" className="bg-[#333333] border border-white/12 rounded-xl p-7 flex flex-col gap-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold flex items-center gap-2 text-white">
+                <MessageSquare size={20} className="text-[#E50914]" />
                 <span>Comments</span>
               </h2>
-              <span className="comments-section__count">{comments.length} Discussion Threads</span>
+              <span className="text-sm text-[#999999] font-mono">{comments.length} Discussion Threads</span>
             </div>
 
             {/* Post Top-level Comment Form */}
-            <form onSubmit={handleAddComment} className="comments-section__form">
+            <form onSubmit={handleAddComment} className="flex gap-3 items-center bg-black/40 border border-white/12 rounded-xl p-2">
               <input
                 type="text"
                 value={newCommentText}
                 onChange={(e) => setNewCommentText(e.target.value)}
                 placeholder="Share your thoughts on this title..."
-                className="comments-section__input"
+                className="flex-1 bg-transparent border-none outline-none text-white text-sm px-3 py-2 placeholder:text-[#999999]"
               />
               <button
                 type="submit"
                 disabled={!newCommentText.trim()}
-                className="comments-section__post-btn"
+                className="bg-[#E50914] text-white text-xs font-semibold px-5 py-2 rounded-md inline-flex items-center gap-1.5 transition-colors duration-150 hover:bg-[#F40612]"
               >
                 <Send size={14} />
                 <span>Post</span>
@@ -571,38 +567,38 @@ export default function MovieDetailPage() {
             </form>
 
             {/* Comments List */}
-            <div className="comments-section__list">
+            <div className="flex flex-col gap-4">
               {comments.map((comment) => (
-                <div key={comment.id} className="comment-card">
+                <div key={comment.id} className="bg-black/30 border border-white/12 rounded-xl p-5 flex flex-col gap-3">
 
                   {/* Comment Author Header */}
-                  <div className="comment-card__header">
-                    <div className="comment-card__avatar-wrapper">
+                  <div className="flex items-center gap-3">
+                    <div className="relative w-9 h-9 rounded-full overflow-hidden shrink-0">
                       <Image
                         src={comment.userAvatar}
                         alt={comment.userName}
                         fill
                         unoptimized
-                        className="comment-card__avatar"
+                        className="object-cover"
                       />
                     </div>
-                    <div className="comment-card__meta">
-                      <div className="comment-card__author">{comment.userName}</div>
-                      <div className="comment-card__time">{comment.createdAt}</div>
+                    <div>
+                      <div className="text-[0.875rem] font-semibold text-white">{comment.userName}</div>
+                      <div className="text-xs text-[#999999]">{comment.createdAt}</div>
                     </div>
                   </div>
 
                   {/* Comment Content */}
-                  <p className="comment-card__text">
+                  <p className="text-[0.875rem] text-[#CCCCCC] leading-relaxed pl-11">
                     {comment.text}
                   </p>
 
                   {/* Comment Actions */}
-                  <div className="comment-card__actions">
+                  <div className="pl-11">
                     <button
                       type="button"
                       onClick={() => setActiveReplyId(activeReplyId === comment.id ? null : comment.id)}
-                      className="comment-card__reply-btn"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#999999] transition-colors duration-150 hover:text-[#E50914]"
                     >
                       <CornerDownRight size={14} />
                       <span>Reply</span>
@@ -611,19 +607,19 @@ export default function MovieDetailPage() {
 
                   {/* Inline Reply Input Box */}
                   {activeReplyId === comment.id && (
-                    <div className="comment-card__reply-box">
+                    <div className="ml-11 mt-2 flex items-center gap-2 bg-black/60 border border-white/22 rounded-xl px-2 py-1.5">
                       <input
                         type="text"
                         value={replyText}
                         onChange={(e) => setReplyText(e.target.value)}
                         placeholder={`Reply to @${comment.userName.toLowerCase().replace(/\s+/g, "")}...`}
-                        className="comment-card__reply-input"
+                        className="flex-1 bg-transparent border-none outline-none text-white text-[0.825rem] px-2 py-1.5 placeholder:text-[#999999]"
                       />
                       <button
                         type="button"
                         onClick={() => handleAddReply(comment.id)}
                         disabled={!replyText.trim()}
-                        className="comment-card__reply-send"
+                        className="bg-[#E50914] text-white text-[0.775rem] font-semibold px-3.5 py-1.5 rounded-md"
                       >
                         Send
                       </button>
@@ -632,23 +628,23 @@ export default function MovieDetailPage() {
 
                   {/* Nested Replies */}
                   {comment.replies && comment.replies.length > 0 && (
-                    <div className="comment-card__replies">
+                    <div className="ml-11 mt-2 pl-4 border-l-2 border-white/12 flex flex-col gap-3.5">
                       {comment.replies.map((reply) => (
-                        <div key={reply.id} className="comment-reply">
-                          <div className="comment-reply__header">
-                            <div className="comment-reply__avatar-wrapper">
+                        <div key={reply.id} className="flex flex-col gap-1.5">
+                          <div className="flex items-center gap-2">
+                            <div className="relative w-6 h-6 rounded-full overflow-hidden">
                               <Image
                                 src={reply.userAvatar}
                                 alt={reply.userName}
                                 fill
                                 unoptimized
-                                className="comment-reply__avatar"
+                                className="object-cover"
                               />
                             </div>
-                            <span className="comment-reply__author">{reply.userName}</span>
-                            <span className="comment-reply__time">{reply.createdAt}</span>
+                            <span className="text-[0.825rem] font-semibold text-white">{reply.userName}</span>
+                            <span className="text-[0.725rem] text-[#999999]">{reply.createdAt}</span>
                           </div>
-                          <p className="comment-reply__text">
+                          <p className="text-[0.825rem] text-[#CCCCCC] leading-normal pl-8">
                             {reply.text}
                           </p>
                         </div>
@@ -665,94 +661,94 @@ export default function MovieDetailPage() {
         </div>
 
 
-        {/* RIGHT SIDEBAR COLUMN: Worth Watching, Details, You May Also Like */}
-        <div className="detail-layout__sidebar">
+        {/* RIGHT SIDEBAR COLUMN */}
+        <div className="flex flex-col gap-8">
 
           {/* 1. Worth Watching Box */}
-          <section className="worth-watching">
-            <h2 className="worth-watching__title">Worth Watching?</h2>
-            <div className="worth-watching__status">Yes</div>
-            <p className="worth-watching__text">
+          <section className="bg-[#333333] border border-white/12 rounded-xl p-6 flex flex-col gap-2">
+            <h2 className="text-lg font-bold text-white">Worth Watching?</h2>
+            <div className="text-3xl font-black text-[#34d399]">Yes</div>
+            <p className="text-sm text-[#CCCCCC]">
               {recommendedPercent !== null ? `${recommendedPercent}%` : "N/A"} of members recommended this {movie.type === "movie" ? "movie" : "series"}.
             </p>
           </section>
 
 
           {/* 2. Details Sidebar Panel */}
-          <section className="details-panel">
-            <h2 className="details-panel__title">Details</h2>
+          <section className="bg-[#333333] border border-white/12 rounded-xl p-6 flex flex-col gap-5">
+            <h2 className="text-lg font-bold text-white">Details</h2>
 
-            <div className="details-panel__list">
-              <div className="details-panel__row">
-                <span className="details-panel__label">Creator</span>
-                <span className="details-panel__val details-panel__val--highlight">{creatorsText}</span>
+            <div className="flex flex-col gap-3.5 text-sm">
+              <div className="grid grid-cols-[120px_1fr] gap-2 items-start max-[768px]:grid-cols-[100px_1fr]">
+                <span className="text-[#999999] font-medium">Creator</span>
+                <span className="text-white font-semibold leading-snug">{creatorsText}</span>
               </div>
 
-              <div className="details-panel__row">
-                <span className="details-panel__label">Cast/Voice Actor</span>
-                <span className="details-panel__val">{castActorsText}</span>
+              <div className="grid grid-cols-[120px_1fr] gap-2 items-start max-[768px]:grid-cols-[100px_1fr]">
+                <span className="text-[#999999] font-medium">Cast/Voice Actor</span>
+                <span className="text-[#CCCCCC] leading-snug">{castActorsText}</span>
               </div>
 
-              <div className="details-panel__row">
-                <span className="details-panel__label">Release</span>
-                <span className="details-panel__val">{movie.releaseDate || movie.year || "-"}</span>
+              <div className="grid grid-cols-[120px_1fr] gap-2 items-start max-[768px]:grid-cols-[100px_1fr]">
+                <span className="text-[#999999] font-medium">Release</span>
+                <span className="text-[#CCCCCC] leading-snug">{movie.releaseDate || movie.year || "-"}</span>
               </div>
 
-              <div className="details-panel__row">
-                <span className="details-panel__label">Episodes</span>
-                <span className="details-panel__val">{movie.episodes || (movie.type === "series" ? "45" : "-")}</span>
+              <div className="grid grid-cols-[120px_1fr] gap-2 items-start max-[768px]:grid-cols-[100px_1fr]">
+                <span className="text-[#999999] font-medium">Episodes</span>
+                <span className="text-[#CCCCCC] leading-snug">{movie.episodes || (movie.type === "series" ? "45" : "-")}</span>
               </div>
 
-              <div className="details-panel__row">
-                <span className="details-panel__label">Seasons</span>
-                <span className="details-panel__val">{movie.seasons || (movie.type === "series" ? "3 (Completed)" : "-")}</span>
+              <div className="grid grid-cols-[120px_1fr] gap-2 items-start max-[768px]:grid-cols-[100px_1fr]">
+                <span className="text-[#999999] font-medium">Seasons</span>
+                <span className="text-[#CCCCCC] leading-snug">{movie.seasons || (movie.type === "series" ? "3 (Completed)" : "-")}</span>
               </div>
 
-              <div className="details-panel__row">
-                <span className="details-panel__label">Run Time</span>
-                <span className="details-panel__val">{movie.runtime || "-"}</span>
+              <div className="grid grid-cols-[120px_1fr] gap-2 items-start max-[768px]:grid-cols-[100px_1fr]">
+                <span className="text-[#999999] font-medium">Run Time</span>
+                <span className="text-[#CCCCCC] leading-snug">{movie.runtime || "-"}</span>
               </div>
 
-              <div className="details-panel__row">
-                <span className="details-panel__label">Genre</span>
-                <span className="details-panel__val">
+              <div className="grid grid-cols-[120px_1fr] gap-2 items-start max-[768px]:grid-cols-[100px_1fr]">
+                <span className="text-[#999999] font-medium">Genre</span>
+                <span className="text-[#CCCCCC] leading-snug">
                   {movie.genre_names?.join(", ") || movie.category || "-"}
                 </span>
               </div>
 
-              <div className="details-panel__row">
-                <span className="details-panel__label">Country</span>
-                <span className="details-panel__val">{movie.country || "-"}</span>
+              <div className="grid grid-cols-[120px_1fr] gap-2 items-start max-[768px]:grid-cols-[100px_1fr]">
+                <span className="text-[#999999] font-medium">Country</span>
+                <span className="text-[#CCCCCC] leading-snug">{movie.country || "-"}</span>
               </div>
 
-              <div className="details-panel__row">
-                <span className="details-panel__label">Network</span>
-                <span className="details-panel__val">{movie.network || "-"}</span>
+              <div className="grid grid-cols-[120px_1fr] gap-2 items-start max-[768px]:grid-cols-[100px_1fr]">
+                <span className="text-[#999999] font-medium">Network</span>
+                <span className="text-[#CCCCCC] leading-snug">{movie.network || "-"}</span>
               </div>
 
-              <div className="details-panel__row">
-                <span className="details-panel__label">Status</span>
-                <span className="details-panel__val">{movie.status || "-"}</span>
+              <div className="grid grid-cols-[120px_1fr] gap-2 items-start max-[768px]:grid-cols-[100px_1fr]">
+                <span className="text-[#999999] font-medium">Status</span>
+                <span className="text-[#CCCCCC] leading-snug">{movie.status || "-"}</span>
               </div>
 
-              <div className="details-panel__row">
-                <span className="details-panel__label">Language</span>
-                <span className="details-panel__val">{movie.language || "-"}</span>
+              <div className="grid grid-cols-[120px_1fr] gap-2 items-start max-[768px]:grid-cols-[100px_1fr]">
+                <span className="text-[#999999] font-medium">Language</span>
+                <span className="text-[#CCCCCC] leading-snug">{movie.language || "-"}</span>
               </div>
 
-              <div className="details-panel__row">
-                <span className="details-panel__label">Also Known As</span>
-                <span className="details-panel__val">{movie.alsoKnownAs || "-"}</span>
+              <div className="grid grid-cols-[120px_1fr] gap-2 items-start max-[768px]:grid-cols-[100px_1fr]">
+                <span className="text-[#999999] font-medium">Also Known As</span>
+                <span className="text-[#CCCCCC] leading-snug">{movie.alsoKnownAs || "-"}</span>
               </div>
             </div>
           </section>
 
 
           {/* 3. You May Also Like Sidebar List */}
-          <section className="you-may-like">
-            <h2 className="you-may-like__title">You May Also Like</h2>
+          <section className="bg-[#333333] border border-white/12 rounded-xl p-6 flex flex-col gap-5">
+            <h2 className="text-lg font-bold text-white">You May Also Like</h2>
 
-            <div className="you-may-like__list">
+            <div className="flex flex-col gap-3.5">
               {recommendations.map((item) => {
                 const itemPoster =
                   item.posterUrl ||
@@ -770,29 +766,29 @@ export default function MovieDetailPage() {
                   <Link
                     key={item.id}
                     href={`/movie/${item.id}`}
-                    className="you-may-like__item"
+                    className="flex items-center gap-3.5 p-2 rounded-md bg-black/30 border border-white/12 no-underline transition-all duration-150 hover:bg-white/8 hover:border-white/22 hover:translate-x-0.5 group"
                   >
-                    <div className="you-may-like__poster-wrapper">
+                    <div className="relative w-12 aspect-[2/3] rounded-md overflow-hidden shrink-0">
                       <Image
                         src={itemPoster}
                         alt={item.title}
                         fill
                         unoptimized
-                        className="you-may-like__poster"
+                        className="object-cover"
                       />
                     </div>
 
-                    <div className="you-may-like__info">
-                      <h3 className="you-may-like__item-title">
+                    <div className="flex-1 min-w-0 flex flex-col gap-1">
+                      <h3 className="text-sm font-semibold text-white truncate transition-colors duration-150 group-hover:text-[#E50914]">
                         {item.title}
                       </h3>
-                      <p className="you-may-like__item-meta">
+                      <p className="text-xs text-[#999999] font-mono truncate">
                         {item.year || "2025"} • {item.genre_names?.[0] || item.category || "Drama"} • 1 Season
                       </p>
                     </div>
 
-                    <div className="you-may-like__rating">
-                      <Star size={12} className="you-may-like__star" />
+                    <div className="flex items-center gap-1 text-sm font-bold text-[#fbbf24] font-mono">
+                      <Star size={12} className="fill-[#fbbf24]" />
                       <span>{itemScore}</span>
                     </div>
                   </Link>
@@ -806,21 +802,21 @@ export default function MovieDetailPage() {
       </div>
 
 
-      {/* ── BOTTOM CTA BANNER ("NOT SURE WHAT TO WATCH NEXT?") ───────────── */}
-      <section className="cta-banner">
-        <div className="cta-banner__content">
-          <h2 className="cta-banner__title">
+      {/* BOTTOM CTA BANNER */}
+      <section className="bg-gradient-to-r from-[rgba(229,9,20,0.25)] via-[rgba(20,20,20,0.95)] to-[rgba(229,9,20,0.25)] border border-[rgba(229,9,20,0.4)] rounded-2xl p-12 text-center flex flex-col items-center gap-7 shadow-[0_10px_30px_rgba(0,0,0,0.6)]">
+        <div className="flex flex-col gap-2 max-w-[650px]">
+          <h2 className="text-3xl font-black tracking-wide uppercase text-white">
             NOT SURE WHAT TO WATCH NEXT ?
           </h2>
-          <p className="cta-banner__text">
+          <p className="text-[#CCCCCC] text-base leading-relaxed">
             Discover community-driven recommendations, honest reviews, and trending netflix content tailored for you.
           </p>
         </div>
 
-        <div className="cta-banner__actions">
+        <div className="flex items-center justify-center gap-4 flex-wrap">
           <Link
             href="/movies"
-            className="cta-banner__btn cta-banner__btn--explore"
+            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-[0.95rem] font-bold no-underline transition-all duration-150 bg-[#E50914] text-white shadow-[0_4px_15px_rgba(229,9,20,0.35)] hover:bg-[#F40612] hover:-translate-y-0.5"
           >
             <Clapperboard size={18} />
             <span>Explore</span>
@@ -828,7 +824,7 @@ export default function MovieDetailPage() {
 
           <Link
             href="/community"
-            className="cta-banner__btn cta-banner__btn--community"
+            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-[0.95rem] font-bold no-underline transition-all duration-150 bg-[#E50914] text-white shadow-[0_4px_15px_rgba(229,9,20,0.35)] hover:bg-[#F40612] hover:-translate-y-0.5"
           >
             <Users size={18} />
             <span>Join Community</span>

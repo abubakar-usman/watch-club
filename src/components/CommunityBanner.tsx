@@ -37,183 +37,78 @@ export default function CommunityBanner({
 }: {
   topics?: TrendingTopic[];
 }) {
-  const [topics] = useState<TrendingTopic[]>(
-    initialTopics || defaultTopics
-  );
+  const [topics] = useState<TrendingTopic[]>(initialTopics || defaultTopics);
 
   return (
-    <section
-      style={{
-        width: "100%",
-        maxWidth: "1400px",
-        margin: "0 auto",
-        padding: "24px 0",
-      }}
-    >
+    <section className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
       <div
+        className="relative w-full min-h-[242px] rounded-[10px] overflow-hidden flex items-center bg-[#1e1e1e]"
         style={{
-          position: "relative",
-          minHeight: "180px",
-          borderRadius: "8px",
-          overflow: "hidden",
-          border: "1px solid rgba(255,255,255,0.06)",
-
-          // Frame 6 is now the background of the WHOLE banner
-          backgroundImage: `
-            linear-gradient(
-              90deg,
-              rgba(55, 0, 0, 0.82) 0%,
-              rgba(30, 0, 0, 0.70) 35%,
-              rgba(10, 10, 10, 0.30) 100%
-            ),
-            url("/Frame_6.png")
-          `,
+          backgroundImage: `linear-gradient(to right, 
+            rgba(55, 0, 0, 1) 0%, 
+            rgba(55, 0, 0, 1) 25%, 
+            rgba(55, 0, 0, 0.8) 45%, 
+            rgba(0, 0, 0, 0) 70%
+          ), url('/Frame_6.png')`,
           backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-
-          display: "grid",
-          gridTemplateColumns: "1fr 2fr",
-          alignItems: "center",
+          backgroundPosition: "right center",
         }}
       >
-        {/* LEFT SIDE */}
-        <div
-          style={{
-            padding: "28px 36px",
-            position: "relative",
-            zIndex: 2,
-          }}
-        >
-          <h2
-            style={{
-              fontSize: "24px",
-              fontWeight: "800",
-              color: "#fff",
-              lineHeight: "1.1",
-              margin: "0 0 14px 0",
-            }}
-          >
-            JOIN THE COMMUNITY
-          </h2>
+        {/* Main Content Grid */}
+        <div className="relative z-10 w-full grid grid-cols-[1.2fr_auto_1.5fr_1fr] items-center gap-12 pl-[50px] pr-8 py-6 max-[1100px]:grid-cols-1 max-[1100px]:px-8">
 
-          <p
-            style={{
-              color: "rgba(255,255,255,0.85)",
-              fontSize: "13px",
-              lineHeight: "1.5",
-              margin: "0 0 18px 0",
-              maxWidth: "290px",
-            }}
-          >
-            Ask, discuss and share recommendations with thousands of netflix
-            fans like you.
-          </p>
-
-          <Link
-            href="/community"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "7px",
-              background: "#111",
-              color: "#fff",
-              padding: "9px 15px",
-              borderRadius: "7px",
-              textDecoration: "none",
-              fontWeight: "600",
-              fontSize: "13px",
-              border: "1px solid rgba(255,255,255,0.12)",
-            }}
-          >
-            <Users size={15} />
-            Join Community
-          </Link>
-        </div>
-
-        {/* VERTICAL DIVIDER */}
-        <div
-          style={{
-            position: "relative",
-            zIndex: 2,
-            borderLeft: "1px solid rgba(255,255,255,0.18)",
-            padding: "20px 25px",
-            minHeight: "120px",
-          }}
-        >
-          {/* TRENDING HEADER */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "7px",
-              marginBottom: "8px",
-            }}
-          >
-            <Flame
-              size={15}
-              fill="#777"
-              color="#777"
-            />
-
-            <span
-              style={{
-                color: "#fff",
-                fontWeight: "700",
-                fontSize: "12px",
-              }}
+          {/* LEFT SIDE: Heading & Description */}
+          <div className="flex flex-col gap-4">
+            <h2 className="text-[32px] font-semibold leading-[38px] uppercase text-white font-roboto">
+              Join the community
+            </h2>
+            <p className="text-[#CCCCCC] text-[16px] font-medium leading-[19px] uppercase max-w-[380px]">
+              Ask, discuss and share recommendations with thousands of netflix
+              fans like you.
+            </p>
+            <Link
+              href="/community"
+              className="bg-[#E60813] text-white text-base font-bold py-[12px] px-[16px] rounded-[10px] flex items-center gap-3 w-fit transition-transform hover:scale-105 active:scale-95"
             >
-              Trending Discussions
-            </span>
+              <Users size={20} />
+              Join Community
+            </Link>
           </div>
 
-          {/* DISCUSSIONS */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            {topics.map((topic, index) => (
-              <Link
-                key={topic.id}
-                href={topic.href}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: "20px",
-                  padding: "10px 0",
-                  textDecoration: "none",
-                  borderBottom:
-                    index !== topics.length - 1
-                      ? "1px solid rgba(255,255,255,0.08)"
-                      : "none",
-                }}
-              >
-                <span
-                  style={{
-                    color: "rgba(255,255,255,0.92)",
-                    fontSize: "12px",
-                    fontWeight: "500",
-                  }}
-                >
-                  {topic.title}
-                </span>
+          {/* VERTICAL DIVIDER (Hidden on mobile) */}
+          <div className="h-40 w-[1px] bg-white/20 max-[1100px]:hidden" />
 
-                <span
-                  style={{
-                    color: "rgba(255,255,255,0.25)",
-                    fontSize: "11px",
-                    whiteSpace: "nowrap",
-                  }}
+          {/* RIGHT SIDE: Trending Discussions */}
+          <div className="flex flex-col gap-6">
+            <div className="flex items-center gap-2.5 text-white text-xl font-bold">
+              <Flame size={22} className="text-[#ff4d4d] fill-[#ff4d4d]" />
+              <span>Trending Discussions</span>
+            </div>
+
+            <div className="flex flex-col gap-5">
+              {topics.map((topic) => (
+                <Link
+                  key={topic.id}
+                  href={topic.href}
+                  className="flex items-center justify-between gap-8 group no-underline"
                 >
-                  {topic.replies}
-                </span>
-              </Link>
-            ))}
+                  <span className="text-white text-base font-semibold group-hover:text-white/70 transition-colors">
+                    {topic.title}
+                  </span>
+                  <span className="text-[#E50914] text-base font-bold whitespace-nowrap">
+                    {topic.replies}
+                  </span>
+                </Link>
+              ))}
+            </div>
           </div>
+
+          {/* SPACER COLUMN: This pushes content left to let the family image show clearly */}
+          <div className="max-[1920px]:hidden" />
         </div>
+
+        {/* Subtle overlay to ensure text readability if image is too bright */}
+        <div className="absolute inset-0 bg-black/10 pointer-events-none" />
       </div>
     </section>
   );

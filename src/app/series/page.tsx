@@ -65,13 +65,15 @@ export default function SeriesPage() {
   }, []);
 
   return (
-    <main style={{ padding: "0 1rem" }} className="space-y-8">
+    <main className="w-full min-h-screen pb-12 overflow-x-hidden space-y-8 bg-[#181818]">
       {/* Top Trending Series Hero Banner */}
       <HeroBanner type="series" />
 
-      <div className="flex items-center gap-3 pt-2">
-        <div className="w-1 h-7 rounded-full bg-brand-red" />
-        <h1 className="font-heading text-3xl text-white">TV Series Catalog</h1>
+      <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-3 pt-2">
+          <div className="w-1 h-7 rounded-full bg-[#E50914]" />
+          <h1 className="font-bold text-3xl text-white tracking-tight">TV Series Catalog</h1>
+        </div>
       </div>
 
       {loading ? (

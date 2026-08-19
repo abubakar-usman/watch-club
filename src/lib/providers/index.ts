@@ -2,7 +2,7 @@ import { Movie, MovieProvider, MovieSearchResult } from "../types";
 
 const MOTN_KEY =
   process.env.STREAMING_AVAILABILITY_API_KEY ||
-  "motn-key-v4-trAtYAdjwuKIY7n9a7gamrqGEPdsQtuN";
+  "motn-key-v4-k0Oczkbe1ZZoB4zEnqsya4gObwu1iKc0";
 
 const MOTN_BASE_URL =
   process.env.STREAMING_AVAILABILITY_BASE_URL ||
@@ -35,8 +35,8 @@ function formatMotnShow(item: any): Movie {
     typeof item.rating === "number"
       ? Math.round((item.rating / 10) * 10) / 10
       : (typeof item.user_rating === "number"
-          ? item.user_rating
-          : (typeof item.vote_average === "number" ? item.vote_average : undefined));
+        ? item.user_rating
+        : (typeof item.vote_average === "number" ? item.vote_average : undefined));
 
   const creators = Array.isArray(item.directors) && item.directors.length > 0
     ? item.directors

@@ -3,384 +3,161 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter, usePathname } from "next/navigation";
-import {
-  Search,
-  Bell,
-  ChevronDown,
-  X,
-  LogIn,
-  Menu,
-} from "lucide-react";
-
-const genres = [
-  "Action",
-  "Adventure",
-  "Animation",
-  "Comedy",
-  "Crime",
-  "Documentary",
-  "Drama",
-  "Fantasy",
-  "Horror",
-  "Mystery",
-  "Romance",
-  "Sci-Fi",
-  "Thriller",
-  "Western",
-];
+import { usePathname } from "next/navigation";
+import { Search, Bell, ChevronDown, X } from "lucide-react";
 
 export default function Navbar() {
-  const router = useRouter();
-  // Auto-detects the current route — no need to pass activePath from every page
   const activePath = usePathname();
-
-  const [isGenreOpen, setIsGenreOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [unreadNotifications, setUnreadNotifications] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const notificationRef = useRef<HTMLDivElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [isGenreOpen, setIsGenreOpen] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const genreRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        if (searchQuery === "") setIsSearchExpanded(false);
+      }
+      if (genreRef.current && !genreRef.current.contains(event.target as Node)) {
         setIsGenreOpen(false);
       }
-
-      if (
-        notificationRef.current &&
-        !notificationRef.current.contains(event.target as Node)
-      ) {
-        setIsNotificationOpen(false);
-      }
     }
-
     document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (isSearchOpen && searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  }, [isSearchOpen]);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [searchQuery]);
 
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Series", href: "/series" },
     { name: "Movies", href: "/movies" },
-    { name: "Community", href: "/community" },
+    { name: "Discussion", href: "/community" },
     { name: "About Us", href: "/about" },
   ];
 
-  const handleMobileLinkClick = () => {
-    setIsMobileMenuOpen(false);
-    setIsGenreOpen(false);
-  };
+  const genres = [
+    { name: "Action", href: "/genre/action" },
+    { name: "Adventure", href: "/genre/adventure" },
+    { name: "Animation", href: "/genre/animation" },
+    { name: "Comedy", href: "/genre/comedy" },
+    { name: "Crime", href: "/genre/crime" },
+    { name: "Documentary", href: "/genre/documentary" },
+    { name: "Drama", href: "/genre/drama" },
+    { name: "Fantasy", href: "/genre/fantasy" },
+    { name: "Horror", href: "/genre/horror" },
+    { name: "Mystery", href: "/genre/mystery" },
+    { name: "Romance", href: "/genre/romance" },
+    { name: "Sci-Fi", href: "/genre/sci-fi" },
+    { name: "Thriller", href: "/genre/thriller" },
+    { name: "Western", href: "/genre/western" },
+  ];
 
   return (
-    <header className="navbar__header">
-      <div className="navbar__container">
+    <header className="fixed top-0 left-0 right-0 z-[1000] h-[84px] bg-[#000000] border-b border-white/5">
+      <div className="w-full max-w-[1400px] mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
 
         {/* LEFT: LOGO */}
-        <div className="navbar__left">
-          <Link
-            href="/"
-            className="navbar__logo-link"
-            aria-label="WatchClub Home"
-          >
+        <div className="flex-shrink-0">
+          <Link href="/">
             <Image
               src="/bglogo.png"
-              alt="WatchClub Logo"
-              width={160}
-              height={40}
+              alt="WatchClub"
+              width={187}
+              height={46}
               priority
-              className="navbar__logo-image"
+              className="h-[130px] w-auto object-contain"
             />
           </Link>
         </div>
 
-        {/* CENTER: DESKTOP NAVIGATION */}
-        <div className="navbar__center">
-          <nav>
-            <ul className="navbar__nav-list">
-              {navLinks.map((link) => {
-                const isActive =
-                  link.href === "/"
-                    ? activePath === "/"
-                    : activePath?.startsWith(link.href);
-
-                return (
-                  <li
-                    key={link.name}
-                    className="navbar__nav-item"
+        {/* CENTER: NAVIGATION */}
+        <nav className="hidden lg:flex items-center justify-center flex-1">
+          <ul className="flex items-center gap-[6px]">
+            {navLinks.map((link) => {
+              const isActive = link.href === "/" ? activePath === "/" : activePath?.startsWith(link.href);
+              return (
+                <li key={link.name}>
+                  <Link
+                    href={link.href}
+                    className={`text-[15px] px-6 py-2 rounded-full transition-all duration-300 font-medium whitespace-nowrap
+                      ${isActive
+                        ? "bg-[#1A1A1A] text-white"
+                        : "text-white/80 hover:text-white"
+                      }`}
                   >
-                    <Link
-                      href={link.href}
-                      className={`navbar__nav-link${isActive
-                        ? " navbar__nav-link--active"
-                        : ""
-                        }`}
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
-        </div>
+                    {link.name}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
 
         {/* RIGHT: ACTIONS */}
-        <div className="navbar__right">
+        <div className="flex items-center gap-[20px] flex-shrink-0">
 
-          {/* GENRE DROPDOWN */}
-          <div
-            className="navbar__dropdown-wrapper"
-            ref={dropdownRef}
-          >
+          {/* GENRE BUTTON & DROPDOWN */}
+          <div ref={genreRef} className="relative">
             <button
-              type="button"
-              className={`navbar__dropdown-trigger${isGenreOpen
-                ? " navbar__dropdown-trigger--active"
-                : ""
-                }`}
               onClick={() => setIsGenreOpen(!isGenreOpen)}
-              aria-expanded={isGenreOpen}
-              aria-label="Toggle Genre dropdown"
+              className="flex items-center gap-1.5 border border-white/20 bg-transparent hover:bg-white/5 text-white text-[14px] px-4 py-1.5 rounded-full transition-all focus:outline-none"
             >
-              <span>Genre</span>
-
-              <ChevronDown
-                size={14}
-                className={`navbar__dropdown-chevron${isGenreOpen
-                  ? " navbar__dropdown-chevron--open"
-                  : ""
-                  }`}
-              />
+              Genre <ChevronDown size={14} className={isGenreOpen ? "rotate-180 transition-transform duration-200" : "transition-transform duration-200"} />
             </button>
 
             {isGenreOpen && (
-              <div className="navbar__dropdown-menu">
-                {genres.map((genre) => (
-                  <Link
-                    key={genre}
-                    href={`/genre/${genre.toLowerCase()}`}
-                    className="navbar__genre-item"
-                    onClick={() => setIsGenreOpen(false)}
-                  >
-                    {genre}
-                  </Link>
-                ))}
+              <div className="absolute top-full right-0 mt-3 w-[340px] bg-[#262626] border border-white/10 rounded-2xl p-6 shadow-2xl z-50">
+                <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                  {genres.map((genre) => (
+                    <Link
+                      key={genre.name}
+                      href={genre.href}
+                      onClick={() => setIsGenreOpen(false)}
+                      className="text-[#d4d4d8] hover:text-white text-[15px] font-medium transition-colors"
+                    >
+                      {genre.name}
+                    </Link>
+                  ))}
+                </div>
               </div>
             )}
           </div>
 
-          {/* SEARCH */}
-          <div className="navbar__search-wrapper">
-            {isSearchOpen ? (
-              <div className="navbar__search-input-container">
-                <Search
-                  size={16}
-                  className="navbar__search-icon-inside"
-                />
-
+          {/* SEARCH BAR */}
+          <div ref={searchRef} className="relative flex items-center">
+            <div className={`flex items-center transition-all duration-300 rounded-full ${isSearchExpanded ? "bg-[#1A1A1A] px-3 py-1.5 w-[200px]" : "w-auto"}`}>
+              <button onClick={() => setIsSearchExpanded(true)} className="text-white focus:outline-none">
+                <Search size={22} strokeWidth={2} />
+              </button>
+              {isSearchExpanded && (
                 <input
-                  ref={searchInputRef}
-                  type="text"
+                  autoFocus
+                  className="bg-transparent border-none outline-none text-white text-sm ml-2 w-full"
                   placeholder="Search..."
                   value={searchQuery}
-                  onChange={(e) =>
-                    setSearchQuery(e.target.value)
-                  }
-                  onKeyDown={(e) => {
-                    if (
-                      e.key === "Enter" &&
-                      searchQuery.trim()
-                    ) {
-                      router.push(
-                        `/search?q=${encodeURIComponent(
-                          searchQuery.trim()
-                        )}`
-                      );
-                    }
-                  }}
-                  className="navbar__search-input"
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsSearchOpen(false);
-                    setSearchQuery("");
-                  }}
-                  className="navbar__clear-search"
-                  aria-label="Close search"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                className="navbar__icon-btn"
-                onClick={() => setIsSearchOpen(true)}
-                aria-label="Open search bar"
-              >
-                <Search size={20} />
-              </button>
-            )}
-          </div>
-
-          {/* NOTIFICATIONS */}
-          <div
-            className="navbar__notif-wrapper"
-            ref={notificationRef}
-          >
-            <button
-              type="button"
-              className="navbar__icon-btn"
-              onClick={() => {
-                setIsNotificationOpen(!isNotificationOpen);
-                setUnreadNotifications(false);
-              }}
-              aria-label="View notifications"
-            >
-              <Bell size={20} />
-
-              {unreadNotifications && (
-                <span className="navbar__badge" />
               )}
-            </button>
-
-            {isNotificationOpen && (
-              <div className="navbar__notif-menu">
-                <div className="navbar__notif-header">
-                  <span>Notifications</span>
-                </div>
-
-                <div
-                  style={{
-                    padding: "1rem",
-                    textAlign: "center",
-                    fontSize: "0.75rem",
-                    color: "var(--text-muted)",
-                  }}
-                >
-                  No new notifications.
-                </div>
-              </div>
-            )}
+            </div>
           </div>
 
-          {/* LOGIN */}
-          <Link
-            href="/login"
-            className="navbar__login-btn"
-          >
-            <LogIn size={16} />
-            <span>Login</span>
-          </Link>
-
-          {/* MOBILE HAMBURGER */}
-          <button
-            type="button"
-            className="navbar__mobile-menu-btn"
-            onClick={() =>
-              setIsMobileMenuOpen(!isMobileMenuOpen)
-            }
-            aria-label="Toggle navigation menu"
-            aria-expanded={isMobileMenuOpen}
-          >
-            {isMobileMenuOpen ? (
-              <X size={23} />
-            ) : (
-              <Menu size={23} />
-            )}
+          {/* NOTIFICATION */}
+          <button className="text-white hover:opacity-80 focus:outline-none">
+            <Bell size={22} strokeWidth={2} />
           </button>
+
+          {/* USER AVATAR */}
+          <div className="w-[40px] h-[40px] rounded-[12px] overflow-hidden cursor-pointer border border-white/10 hover:scale-105 transition-transform">
+            <Image
+              src="/popcorn.png"
+              alt="User"
+              width={40}
+              height={40}
+              className="object-cover"
+            />
+          </div>
         </div>
       </div>
-
-      {/* MOBILE NAVIGATION MENU */}
-      {isMobileMenuOpen && (
-        <div className="navbar__mobile-menu">
-          <nav>
-            <ul className="navbar__mobile-nav-list">
-
-              {navLinks.map((link) => {
-                const isActive =
-                  link.href === "/"
-                    ? activePath === "/"
-                    : activePath?.startsWith(link.href);
-
-                return (
-                  <li key={link.name}>
-                    <Link
-                      href={link.href}
-                      onClick={handleMobileLinkClick}
-                      className={`navbar__mobile-nav-link${isActive
-                        ? " navbar__mobile-nav-link--active"
-                        : ""
-                        }`}
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                );
-              })}
-
-              {/* MOBILE GENRE */}
-              <li>
-                <button
-                  type="button"
-                  className="navbar__mobile-genre-btn"
-                  onClick={() =>
-                    setIsGenreOpen(!isGenreOpen)
-                  }
-                >
-                  <span>Genre</span>
-
-                  <ChevronDown
-                    size={16}
-                    className={
-                      isGenreOpen
-                        ? "navbar__dropdown-chevron--open"
-                        : ""
-                    }
-                  />
-                </button>
-
-                {isGenreOpen && (
-                  <div className="navbar__mobile-genres">
-                    {genres.map((genre) => (
-                      <Link
-                        key={genre}
-                        href={`/genre/${genre.toLowerCase()}`}
-                        onClick={handleMobileLinkClick}
-                        className="navbar__mobile-genre-item"
-                      >
-                        {genre}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </li>
-
-            </ul>
-          </nav>
-        </div>
-      )}
     </header>
   );
 }

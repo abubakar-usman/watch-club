@@ -43,7 +43,6 @@ interface RawSearchResult {
 }
 
 interface HeroBannerProps {
-  // "spiderman" / "demon-slayer" removed — hero is always driven by real trending data now
   type?: "all" | "movie" | "series";
   searchQuery?: string;
   item?: HeroData | null;
@@ -68,8 +67,7 @@ export default function HeroBanner({
         let endpoint = "";
         if (searchQuery) {
           endpoint = `/api/movies/search?query=${encodeURIComponent(searchQuery)}`;
-        } else if (type === "all" || (type as string) === "spiderman") {
-          // Uses the pinned featured title, not live trending — keeps /api/movies/trending untouched for other consumers (e.g. Top 10 Carousel)
+        } else if (type === "all") {
           endpoint = "/api/movies/featured";
         } else {
           endpoint = `/api/movies/trending?type=${encodeURIComponent(type)}`;
@@ -92,7 +90,6 @@ export default function HeroBanner({
           const typeTag = m.statusBadge || (m.type === "movie" ? "Movie" : "Series");
           const yearTag = m.year || (m.releaseDate ? String(m.releaseDate).split("-")[0] : null);
 
-          // Tag row = type + genres + year. Subtitle no longer repeats genres.
           const tags = [typeTag, ...genres, yearTag].filter(Boolean) as string[];
 
           const rawScore = m.vote_average || m.user_rating || 8.5;
@@ -102,7 +99,6 @@ export default function HeroBanner({
           const formatted: HeroData = {
             id: m.id,
             title: m.title || m.name || "",
-            // subtitle now only used if the API explicitly provides one — no genre duplication
             subtitle: m.subtitle,
             clubScore: score,
             recommendedPercent: `${percentVal}%`,
@@ -134,18 +130,20 @@ export default function HeroBanner({
 
   if (loading) {
     return (
-      <section className="hero__section hero__section--loading" style={{ minHeight: "560px", backgroundColor: "#282828", display: "flex", alignItems: "center", justifyContent: "flex-end", position: "relative", overflow: "hidden" }}>
-        {/* Loading skeleton remains the same */}
+      <section className="w-full max-w-[1400px] mx-auto my-6 mb-8 px-4 sm:px-6 lg:px-8">
+        <div className="relative w-full min-h-[560px] h-[70vh] max-h-[720px] bg-[#282828] rounded-2xl overflow-hidden flex items-end animate-pulse" />
       </section>
     );
   }
 
   if (!heroData) {
     return (
-      <section className="hero__section hero__section--empty" style={{ minHeight: "320px", background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "var(--radius-lg)", display: "flex", alignItems: "center", justifyContent: "center", margin: "1.5rem auto" }}>
-        <div style={{ textAlign: "center", color: "var(--text-muted)", padding: "2rem" }}>
-          <p style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.5rem" }}>No Title Available</p>
-          <p style={{ fontSize: "0.875rem" }}>Check back later for live recommendations.</p>
+      <section className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="h-[650px] bg-black/30 border border-white/10 rounded-[30px] flex items-center justify-center">
+          <div className="text-center text-[#999999] p-8">
+            <p className="text-lg font-semibold text-white mb-2">No Title Available</p>
+            <p className="text-sm">Check back later for live recommendations.</p>
+          </div>
         </div>
       </section>
     );
@@ -154,101 +152,105 @@ export default function HeroBanner({
   const backdropImage = heroData.backdropUrl || heroData.posterUrl || "";
 
   return (
-    <section
-      className="hero__section"
-      style={{
-        backgroundImage: backdropImage ? `url("${backdropImage}")` : undefined,
-      }}
-    >
-      <div className="hero__content">
-        <div className="hero__title-container">
-          <Link href={heroData.id ? `/movie/${heroData.id}` : "#"}>
-            <h1 className="hero__main-title hover:underline cursor-pointer">{heroData.title}</h1>
-          </Link>
-          {heroData.subtitle && <span className="hero__subtitle">{heroData.subtitle}</span>}
-        </div>
-
-        <div className="hero__badge-row">
-          <div className="hero__badge">
-            <Star size={18} className="hero__star-icon" />
-            <span className="hero__badge-value">{heroData.clubScore}</span>
-            <span className="hero__badge-label">Club Score</span>
-          </div>
-          <div className="hero__badge">
-            <ThumbsUp size={18} className="hero__thumb-icon" />
-            <span className="hero__badge-value">{heroData.recommendedPercent}</span>
-            <span className="hero__badge-label">Recommended</span>
-          </div>
-          <div className="hero__badge">
-            <MessageSquare size={18} className="hero__comment-icon" />
-            <span className="hero__badge-value">{heroData.commentCount}</span>
-            <span className="hero__badge-label">Comments</span>
-          </div>
-        </div>
-
-        {heroData.tags && heroData.tags.length > 0 && (
-          <div className="hero__tag-row">
-            <span className="hero__tag-text">{heroData.tags.join(" • ")}</span>
-          </div>
-        )}
-
-        <p className="hero__description">{heroData.description}</p>
-
-        <div className="hero__button-group">
-          <button
-            type="button"
-            className="hero__primary-btn"
-            onClick={() => setInWatchlist(!inWatchlist)}
-            aria-label="Add to Watchlist"
-          >
-            {inWatchlist ? (
-              <>
-                <Check size={18} />
-                <span>In Watchlist</span>
-              </>
-            ) : (
-              <>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/play.png"
-                  alt="play"
-                  style={{ width: '18px', height: '18px', objectFit: 'contain' }}
-                />
-                <span>Add To Watchlist</span>
-              </>
+    <section className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div
+        className="relative w-full h-[650px] bg-[#282828] bg-cover bg-center rounded-[30px] overflow-hidden shadow-[0_12px_30px_rgba(0,0,0,0.5)] flex items-end"
+        style={{
+          backgroundImage: backdropImage ? `url("${backdropImage}")` : undefined,
+        }}
+      >
+        <div className="relative z-10 px-12 py-14 max-w-[680px] flex flex-col gap-5 max-[768px]:px-6 max-[768px]:py-8">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-[3.5rem] font-black leading-none tracking-tight text-white uppercase [text-shadow:0_4px_20px_rgba(0,0,0,0.9)] font-sans max-[768px]:text-[2.2rem]">
+              {heroData.title}
+            </h1>
+            {heroData.subtitle && (
+              <span className="text-xl font-bold tracking-[0.15em] text-[#E50914] uppercase">
+                {heroData.subtitle}
+              </span>
             )}
-          </button>
+          </div>
 
-          {heroData.id ? (
-            <Link
-              href={`/movie/${heroData.id}`}
-              className="hero__secondary-btn"
-              style={{ backgroundColor: 'transparent', border: '1px solid rgba(255,255,255,0.2)' }}
-              aria-label="More Info"
-            >
-              <Info size={18} />
-              <span>More Info</span>
-            </Link>
-          ) : (
+          <div className="flex items-center gap-6 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Star size={18} className="text-[#FFC107] fill-[#FFC107]" />
+              <span className="text-lg font-extrabold text-white">{heroData.clubScore}</span>
+              <span className="text-[0.8rem] font-medium text-[#CCCCCC]">Club Score</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <ThumbsUp size={18} className="text-[#4CAF50]" />
+              <span className="text-lg font-extrabold text-white">{heroData.recommendedPercent}</span>
+              <span className="text-[0.8rem] font-medium text-[#CCCCCC]">Recommended</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <MessageSquare size={18} className="text-[#2196F3]" />
+              <span className="text-lg font-extrabold text-white">{heroData.commentCount}</span>
+              <span className="text-[0.8rem] font-medium text-[#CCCCCC]">Comments</span>
+            </div>
+          </div>
+
+          {heroData.tags && heroData.tags.length > 0 && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[#E5E5E5] text-[0.95rem] font-medium tracking-wide">
+                {heroData.tags.join(" • ")}
+              </span>
+            </div>
+          )}
+
+          <p className="text-[#D1D1D1] text-base leading-[1.55] max-w-[580px] [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]">
+            {heroData.description}
+          </p>
+
+          <div className="flex items-center gap-4 mt-2 flex-wrap">
             <button
               type="button"
-              className="hero__secondary-btn"
-              style={{ backgroundColor: 'transparent', border: '1px solid rgba(255,255,255,0.2)' }}
-              aria-label="More Info"
+              className="bg-white text-black text-[0.95rem] font-bold px-6 py-3 rounded-full inline-flex items-center gap-2 transition-all duration-150 shadow-[0_4px_15px_rgba(255,255,255,0.2)] hover:bg-[#E6E6E6] hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(255,255,255,0.3)]"
+              onClick={() => setInWatchlist(!inWatchlist)}
+              aria-label="Add to Watchlist"
             >
-              <Info size={18} />
-              <span>More Info</span>
+              {inWatchlist ? (
+                <>
+                  <Check size={18} />
+                  <span>In Watchlist</span>
+                </>
+              ) : (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/play.png" alt="play" className="w-[18px] h-[18px] object-contain" />
+                  <span>Add To Watchlist</span>
+                </>
+              )}
             </button>
-          )}
-        </div>
-      </div>
 
-      {heroData.award && (
-        <div className="hero__award-badge">
-          <Trophy size={16} />
-          <span>{heroData.award}</span>
+            {heroData.id ? (
+              <Link
+                href={`/movie/${heroData.id}`}
+                className="bg-white/[0.08] backdrop-blur-[8px] text-white text-[0.95rem] font-bold px-6 py-3 rounded-full inline-flex items-center gap-2 border border-white/20 transition-all duration-150 hover:bg-white/[0.14] hover:border-white/40 hover:-translate-y-0.5"
+                aria-label="More Info"
+              >
+                <Info size={18} />
+                <span>More Info</span>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                className="bg-white/[0.08] backdrop-blur-[8px] text-white text-[0.95rem] font-bold px-6 py-3 rounded-full inline-flex items-center gap-2 border border-white/20 transition-all duration-150 hover:bg-white/[0.14] hover:border-white/40 hover:-translate-y-0.5"
+                aria-label="More Info"
+              >
+                <Info size={18} />
+                <span>More Info</span>
+              </button>
+            )}
+          </div>
         </div>
-      )}
+
+        {heroData.award && (
+          <div className="absolute bottom-14 right-12 bg-black/65 backdrop-blur-[12px] rounded-full px-4 py-2 flex items-center gap-2 text-white text-sm font-semibold border border-white/10 max-[768px]:hidden">
+            <Trophy size={16} />
+            <span>{heroData.award}</span>
+          </div>
+        )}
+      </div>
     </section>
   );
 }

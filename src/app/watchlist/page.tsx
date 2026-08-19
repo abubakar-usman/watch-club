@@ -70,7 +70,7 @@ export default function WatchlistPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="max-w-5xl mx-auto space-y-6 py-6 animate-pulse">
+      <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6 py-6 animate-pulse">
         <div className="h-10 w-48 bg-white/5 rounded-xl" />
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {[1, 2, 3, 4, 5].map((i) => (
@@ -114,7 +114,7 @@ export default function WatchlistPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 py-4">
+    <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-1 h-6 rounded-full bg-brand-red" />

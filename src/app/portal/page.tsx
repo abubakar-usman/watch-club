@@ -179,7 +179,7 @@ export default function PortalPage() {
   const displayName = user.name ?? user.email.split("@")[0];
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 py-4">
+    <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-4">
       {/* ── USER HEADER CARD ─────────────────────────────────────── */}
       <div className="bg-black/60 border border-white/8 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl backdrop-blur relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-brand-red/10 rounded-full blur-3xl pointer-events-none" />

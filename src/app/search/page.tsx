@@ -70,7 +70,7 @@ function SearchContent() {
   ];
 
   return (
-    <main className="max-w-6xl mx-auto space-y-8 py-6 px-4">
+    <main className="w-full max-w-[1400px] mx-auto space-y-8 py-6 px-4 sm:px-6 lg:px-8">
       <div className="space-y-4">
         <h1 className="font-heading text-3xl text-white flex items-center gap-3">
           <SearchIcon className="text-brand-red" size={28} />
@@ -100,11 +100,10 @@ function SearchContent() {
               <button
                 key={g}
                 onClick={() => setSelectedGenre(g)}
-                className={`px-3 py-1 rounded-full font-mono text-xs border transition-colors ${
-                  selectedGenre === g
+                className={`px-3 py-1 rounded-full font-mono text-xs border transition-colors ${selectedGenre === g
                     ? "bg-brand-red text-white border-brand-red"
                     : "bg-white/5 border-white/10 text-gray hover:text-white"
-                }`}
+                  }`}
               >
                 {g.toUpperCase()}
               </button>
@@ -114,25 +113,22 @@ function SearchContent() {
           <div className="flex items-center gap-2 ml-auto">
             <button
               onClick={() => setSelectedType("all")}
-              className={`px-3 py-1 rounded-lg font-mono text-xs ${
-                selectedType === "all" ? "bg-white/20 text-white" : "text-gray"
-              }`}
+              className={`px-3 py-1 rounded-lg font-mono text-xs ${selectedType === "all" ? "bg-white/20 text-white" : "text-gray"
+                }`}
             >
               ALL
             </button>
             <button
               onClick={() => setSelectedType("movie")}
-              className={`px-3 py-1 rounded-lg font-mono text-xs ${
-                selectedType === "movie" ? "bg-brand-red text-white" : "text-gray"
-              }`}
+              className={`px-3 py-1 rounded-lg font-mono text-xs ${selectedType === "movie" ? "bg-brand-red text-white" : "text-gray"
+                }`}
             >
               MOVIES
             </button>
             <button
               onClick={() => setSelectedType("series")}
-              className={`px-3 py-1 rounded-lg font-mono text-xs ${
-                selectedType === "series" ? "bg-brand-red text-white" : "text-gray"
-              }`}
+              className={`px-3 py-1 rounded-lg font-mono text-xs ${selectedType === "series" ? "bg-brand-red text-white" : "text-gray"
+                }`}
             >
               SERIES
             </button>
@@ -199,7 +195,7 @@ function SearchContent() {
 export default function SearchPage() {
   return (
     <Suspense fallback={
-      <div className="max-w-6xl mx-auto space-y-8 py-6 px-4 animate-pulse">
+      <div className="w-full max-w-[1400px] mx-auto space-y-8 py-6 px-4 sm:px-6 lg:px-8 animate-pulse">
         <div className="h-10 bg-white/5 rounded-xl w-64" />
         <div className="h-12 bg-white/5 rounded-2xl max-w-2xl" />
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">

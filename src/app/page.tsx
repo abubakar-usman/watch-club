@@ -122,36 +122,41 @@ export default function Home() {
   }, []);
 
   return (
-    <main style={{ padding: "0 1rem" }}>
+    <main className="w-full min-h-screen pb-12 overflow-x-hidden bg-[#181818]">
       {/* Hero Banner (Featured Item) */}
-      <HeroBanner type="all" />
+      <div className="mb-12">
+        <HeroBanner type="all" />
+      </div>
 
-      {/* Top 10 Recommendations For Today */}
-      <TopTenCarousel />
+      {/* Sections Wrapper (32px gap between each subsequent section) */}
+      <div className="space-y-8">
+        {/* Top 10 Recommendations For Today */}
+        <TopTenCarousel />
 
-      {/* Top Searches */}
-      <MediaRow title="Top Searches" items={topSearches} />
+        {/* Top Searches */}
+        <MediaRow title="Top Searches" items={topSearches} />
 
-      {/* Most Recommended Movies */}
-      <MediaRow title="Most Recommended Movies" items={recommendedMovies} />
+        {/* Most Recommended Movies */}
+        <MediaRow title="Most Recommended Movies" items={recommendedMovies} />
 
-      {/* Most Recommended Series */}
-      <MediaRow title="Most Recommended Series" items={recommendedSeries} />
+        {/* Most Recommended Series */}
+        <MediaRow title="Most Recommended Series" items={recommendedSeries} />
 
-      {/* Most Discussed This Week */}
-      <MostDiscussedRow />
+        {/* Most Discussed This Week */}
+        <MostDiscussedRow />
 
-      {/* Community Banner */}
-      <CommunityBanner />
+        {/* Community Banner */}
+        <CommunityBanner />
 
-      {/* Dynamic Genre & Category Rows */}
-      {categoryRows.map((catRow) => (
-        <MediaRow key={catRow.title} title={catRow.title} items={catRow.items} />
-      ))}
+        {/* Dynamic Genre & Category Rows */}
+        {categoryRows.map((catRow) => (
+          <MediaRow key={catRow.title} title={catRow.title} items={catRow.items} />
+        ))}
 
-      {/* Watch Next Banner */}
-      <WatchNextBanner />
-
+        {/* Watch Next Banner */}
+        <WatchNextBanner />
+      </div>
     </main>
   );
 }
+
