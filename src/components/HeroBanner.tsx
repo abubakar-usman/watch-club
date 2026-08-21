@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Star, ThumbsUp, MessageSquare, Info, Check, Trophy } from "lucide-react";
+import { Star, ThumbsUp, MessageSquare, Info, Check, Trophy, Plus } from "lucide-react";
 
 export interface HeroData {
   id?: string | number;
@@ -92,9 +92,9 @@ export default function HeroBanner({
 
           const tags = [typeTag, ...genres, yearTag].filter(Boolean) as string[];
 
-          const rawScore = m.vote_average || m.user_rating || 8.5;
-          const score = Number(rawScore).toFixed(1);
-          const percentVal = Math.min(99, Math.round((Number(rawScore) / 10) * 100));
+          const rawScore = m.vote_average || m.user_rating || null;
+          const score = rawScore !== null && rawScore !== undefined ? Number(rawScore).toFixed(1) : "N/A";
+          const percentVal = rawScore !== null && rawScore !== undefined ? Math.min(99, Math.round((Number(rawScore) / 10) * 100)) : 0;
 
           const formatted: HeroData = {
             id: m.id,
@@ -102,10 +102,10 @@ export default function HeroBanner({
             subtitle: m.subtitle,
             clubScore: score,
             recommendedPercent: `${percentVal}%`,
-            commentCount: m.vote_count ? `${m.vote_count}+` : "1k+",
+            commentCount: m.vote_count ? `${m.vote_count}+` : "0",
             tags,
             description: m.overview || m.description || "",
-            award: m.award || (Number(rawScore) >= 8 ? "Top Rated" : "Trending #1"),
+            award: m.award || (rawScore && Number(rawScore) >= 8 ? "Top Rated" : "Trending #1"),
             backdropUrl: m.backdrop || m.backdrop_path || m.posterUrl || m.poster || m.poster_path,
             posterUrl: m.posterUrl || m.poster || m.poster_path,
           };
@@ -215,8 +215,7 @@ export default function HeroBanner({
                 </>
               ) : (
                 <>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/play.png" alt="play" className="w-[18px] h-[18px] object-contain" />
+                  <Plus size={18} />
                   <span>Add To Watchlist</span>
                 </>
               )}

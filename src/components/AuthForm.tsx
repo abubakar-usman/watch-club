@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Mail, Lock, User, ArrowRight } from "lucide-react";
-import { useAuth } from "@/lib/auth/useAuth";
+import { signIn, signUp } from "@/lib/auth-client";
 
 interface AuthFormProps {
   mode: "login" | "signup";
@@ -12,7 +12,6 @@ interface AuthFormProps {
 
 export default function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
-  const { setUser, setToken } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -30,18 +29,32 @@ export default function AuthForm({ mode }: AuthFormProps) {
     setError(null);
 
     try {
-      // Set demo authenticated user session
-      const newUser = {
-        id: "5d4ff78e-4631-41e6-b496-b50d1cd9d146",
-        email,
-        name: name || email.split("@")[0],
-      };
-      localStorage.setItem("watchclub_user", JSON.stringify(newUser));
-      setUser(newUser);
-      setToken("demo-jwt-token");
-      router.push("/portal");
-    } catch {
-      setError("Failed to sign in. Please try again.");
+      if (mode === "signup") {
+        const res = await signUp.email({
+          email,
+          password,
+          name: name || email.split("@")[0],
+        });
+
+        if (res.error) {
+          setError(res.error.message || "Failed to create account.");
+        } else {
+          router.push("/portal");
+        }
+      } else {
+        const res = await signIn.email({
+          email,
+          password,
+        });
+
+        if (res.error) {
+          setError(res.error.message || "Failed to sign in. Please check your credentials.");
+        } else {
+          router.push("/portal");
+        }
+      }
+    } catch (err: any) {
+      setError(err?.message || "An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -111,7 +124,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full flex items-center justify-center gap-2 bg-brand-red hover:bg-brand-red-dark text-white font-semibold py-3 rounded-xl transition-all shadow-lg shadow-brand-red/20 disabled:opacity-50 mt-2"
+        className="w-full flex items-center justify-center gap-2 bg-brand-red hover:bg-brand-red-dark text-white font-semibold py-3 rounded-xl transition-all shadow-lg shadow-brand-red/20 disabled:opacity-50 mt-2 cursor-pointer"
       >
         <span>{loading ? "Processing..." : mode === "login" ? "Sign In" : "Create Account"}</span>
         <ArrowRight size={16} />

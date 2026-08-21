@@ -53,57 +53,16 @@ export default function MovieDetailPage() {
   const [inWatchlist, setInWatchlist] = useState(false);
 
   // Reaction Bar States
-  const [userReaction, setUserReaction] = useState<string | null>("like");
+  const [userReaction, setUserReaction] = useState<string | null>(null);
   const [reactions, setReactions] = useState({
-    like: { count: 12800, percent: 50 },
-    love: { count: 12800, percent: 50 },
-    favorite: { count: 12800, percent: 50 },
-    dislike: { count: 12800, percent: 50 },
+    like: { count: 0, percent: 0 },
+    love: { count: 0, percent: 0 },
+    favorite: { count: 0, percent: 0 },
+    dislike: { count: 0, percent: 0 },
   });
 
   // Comments State
-  const [comments, setComments] = useState<DetailComment[]>([
-    {
-      id: "c1",
-      userName: "Alay Sameer",
-      userAvatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
-      text: "Came for the action, stayed for the characters. Every season gets better and the journey feels rewarding. Zuko's redemption arc alone makes it worth watching.",
-      createdAt: "2 hours ago",
-      replies: [],
-    },
-    {
-      id: "c2",
-      userName: "Alay Sameer",
-      userAvatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
-      text: "Came for the action, stayed for the characters. Every season gets better and the journey feels rewarding. Zuko's redemption arc alone makes it worth watching.",
-      createdAt: "4 hours ago",
-      replies: [],
-    },
-    {
-      id: "c3",
-      userName: "Alay Sameer",
-      userAvatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
-      text: "this show was worth my time. 10 on 10!!",
-      createdAt: "5 hours ago",
-      replies: [
-        {
-          id: "r1",
-          userName: "Miral",
-          userAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop",
-          text: "this show was worth my time. 10 on 10!!",
-          createdAt: "1 hour ago",
-        },
-      ],
-    },
-    {
-      id: "c4",
-      userName: "Alay Sameer",
-      userAvatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
-      text: "Came for the action, stayed for the characters. Every season gets better and the journey feels rewarding. Zuko's redemption arc alone makes it worth watching.",
-      createdAt: "1 day ago",
-      replies: [],
-    },
-  ]);
+  const [comments, setComments] = useState<DetailComment[]>([]);
 
   const [newCommentText, setNewCommentText] = useState("");
   const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
@@ -236,7 +195,7 @@ export default function MovieDetailPage() {
     return (
       <main className="w-full max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-0 py-8 pb-16 flex flex-col gap-8 min-h-[70vh] justify-center">
         <div className="w-full h-[500px] lg:h-[650px] bg-[#302F2F] border border-[#535353] rounded-[10px] animate-pulse" />
-        <div className="grid grid-cols-1 lg:grid-cols-[908px_404px] gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2.25fr)_minmax(320px,1fr)] gap-8">
           <div className="flex flex-col gap-8">
             <div className="w-full h-[89px] bg-[#302F2F] border border-[#535353] rounded-[10px] animate-pulse" />
             <div className="w-full h-[600px] bg-[#302F2F] border border-[#535353] rounded-[10px] animate-pulse" />
@@ -288,28 +247,28 @@ export default function MovieDetailPage() {
     DEFAULT_BACKDROP;
 
   const rawScore = movie.user_rating ?? movie.vote_average ?? null;
-  const clubScore = rawScore !== null && rawScore !== undefined ? Number(rawScore).toFixed(1) : "9.8";
-  const recommendedPercent = rawScore !== null && rawScore !== undefined ? Math.min(99, Math.round((Number(rawScore) / 10) * 100)) : 96;
+  const clubScore = rawScore !== null && rawScore !== undefined ? Number(rawScore).toFixed(1) : "N/A";
+  const recommendedPercent = rawScore !== null && rawScore !== undefined ? Math.min(99, Math.round((Number(rawScore) / 10) * 100)) : 0;
 
   const castList = Array.isArray(movie.cast) ? movie.cast : [];
 
   const creatorsText = movie.creators && movie.creators.length > 0
     ? movie.creators.join(" & ")
-    : "Michael Dante DiMartino & Bryan Konietzko";
+    : "Information not available";
 
   const castActorsText = castList.length > 0
     ? castList
       .slice(0, 8)
       .map((c: any) => (typeof c === "string" ? c : c.name || c.actor))
       .join(", ")
-    : "Gordon Cormier, Kiawentiio, Ian Ousley, Dallas Liu, Paul Sun-Hyung Lee, Daniel Dae Kim, Elizabeth Yu, Ken Leung, Maria Zhang";
+    : "Information not available";
 
   return (
-    <main className="w-full max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-0 py-6 pb-16 flex flex-col gap-[32px] text-white">
+    <main className="w-full max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-0 py-6 pb-16 flex flex-col gap-8 text-white">
 
       {/* 1. HERO BANNER (Frame 43 / detail) */}
       <section
-        className="relative w-full rounded-[10px] overflow-hidden min-h-[500px] lg:h-[650px] flex items-center p-6 sm:p-10 lg:p-[64px_75px] gap-8 lg:gap-[77px] shadow-2xl"
+        className="relative w-full rounded-[10px] overflow-hidden min-h-[500px] lg:h-auto xl:h-[650px] flex flex-col xl:flex-row items-center p-6 sm:p-10 lg:p-10 xl:px-[75px] xl:py-16 gap-8 xl:gap-[77px] shadow-2xl"
         style={{
           backgroundImage: `linear-gradient(180deg, rgba(0, 0, 0, 0) 81.23%, #282828 100%), linear-gradient(0deg, rgba(0, 0, 0, 0.38), rgba(0, 0, 0, 0.38)), url("${backdropImage}")`,
           backgroundSize: "cover",
@@ -317,7 +276,7 @@ export default function MovieDetailPage() {
         }}
       >
         {/* Poster (126100858316120595 1) */}
-        <div className="relative w-[240px] sm:w-[300px] lg:w-[366px] h-[340px] sm:h-[430px] lg:h-[522px] rounded-[30px] overflow-hidden shadow-2xl shrink-0 z-10 hidden sm:block">
+        <div className="relative w-[240px] sm:w-[300px] lg:w-[300px] xl:w-[366px] h-[340px] sm:h-[430px] lg:h-[430px] xl:h-[522px] rounded-[30px] overflow-hidden shadow-2xl shrink-0 z-10 hidden sm:block">
           <Image
             src={posterImage}
             alt={movie.title}
@@ -329,7 +288,7 @@ export default function MovieDetailPage() {
         </div>
 
         {/* Content Info (Frame 37) */}
-        <div className="flex flex-col items-start gap-5 lg:gap-[28px] max-w-[633px] z-10">
+        <div className="flex flex-col items-start gap-5 lg:gap-6 xl:gap-[28px] w-full max-w-[633px] z-10">
 
           {/* Badges Button Row (button) */}
           <div className="flex items-center gap-4 flex-wrap">
@@ -384,7 +343,7 @@ export default function MovieDetailPage() {
                 </>
               ) : (
                 <>
-                  <Bookmark size={20} className="fill-white text-white" />
+                  <Plus size={20} className="text-white" />
                   <span className="text-white">Add to Watchlist</span>
                 </>
               )}
@@ -405,51 +364,51 @@ export default function MovieDetailPage() {
 
 
       {/* 2. MAIN 2-COLUMN LAYOUT (page) */}
-      <div className="grid grid-cols-1 lg:grid-cols-[908px_404px] gap-[32px] items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2.25fr)_minmax(320px,1fr)] gap-8 items-start">
 
         {/* LEFT COLUMN (left side) */}
-        <div className="flex flex-col gap-[32px] min-w-0">
+        <div className="flex flex-col gap-8 min-w-0">
 
           {/* TOP 3 RATING METRICS ROW (rate) */}
-          <section className="flex flex-row gap-[28px]">
+          <section className="grid grid-cols-1 sm:grid-cols-3 gap-5 lg:gap-[28px]">
             {/* Club Score Card */}
-            <div className="bg-[#302F2F] border border-[#535353] rounded-[10px] h-[89px] w-[240px] shrink-0 flex flex-col items-center justify-center gap-[10px] py-[22px] px-[78px]">
-              <div className="flex items-center gap-[2px]">
+            <div className="bg-[#242424] border border-[#535353] rounded-[10px] h-[89px] flex flex-col items-center justify-center gap-1 p-[22px_24px] shadow-sm">
+              <div className="flex items-center gap-1.5">
                 {/* Yellow Star Icon */}
-                <Star size={20} className="text-[#FFCC00] fill-[#FFCC00]" />
+                <Star size={18} className="text-[#FFCC00] fill-[#FFCC00]" />
                 <span className="font-bold text-[20px] text-white leading-none">
                   {clubScore}
                 </span>
               </div>
-              <span className="font-normal text-[16px] text-[#ECECEC] capitalize leading-none whitespace-nowrap">
+              <span className="font-normal text-[15px] text-[#ECECEC] capitalize leading-none">
                 Club Score
               </span>
             </div>
 
             {/* Recommended Card */}
-            <div className="bg-[#302F2F] border border-[#535353] rounded-[10px] h-[89px] w-[240px] shrink-0 flex flex-col items-center justify-center gap-[10px] py-[22px] px-[78px]">
-              <div className="flex items-center gap-[2px]">
+            <div className="bg-[#242424] border border-[#535353] rounded-[10px] h-[89px] flex flex-col items-center justify-center gap-1 p-[22px_24px] shadow-sm">
+              <div className="flex items-center gap-1.5">
                 {/* Green Thumbs-up */}
-                <ThumbsUp size={20} className="text-[#4A9245] fill-[#4A9245]" />
+                <ThumbsUp size={18} className="text-[#4A9245] fill-[#4A9245]" />
                 <span className="font-bold text-[20px] text-white leading-none">
                   {recommendedPercent}%
                 </span>
               </div>
-              <span className="font-normal text-[16px] text-[#ECECEC] capitalize leading-none whitespace-nowrap">
+              <span className="font-normal text-[15px] text-[#ECECEC] capitalize leading-none">
                 Recommended
               </span>
             </div>
 
             {/* Comments Card */}
-            <div className="bg-[#302F2F] border border-[#535353] rounded-[10px] h-[89px] w-[240px] shrink-0 flex flex-col items-center justify-center gap-[10px] py-[22px] px-[78px]">
-              <div className="flex items-center gap-[2px]">
+            <div className="bg-[#242424] border border-[#535353] rounded-[10px] h-[89px] flex flex-col items-center justify-center gap-1 p-[22px_24px] shadow-sm">
+              <div className="flex items-center gap-1.5">
                 {/* Blue Comment Icon */}
-                <MessageSquare size={20} className="text-[#007AFF] fill-[#007AFF]" />
+                <MessageSquare size={18} className="text-[#007AFF] fill-[#007AFF]" />
                 <span className="font-bold text-[20px] text-white leading-none">
                   {movie.vote_count ? `${movie.vote_count}+` : "10K+"}
                 </span>
               </div>
-              <span className="font-normal text-[16px] text-[#ECECEC] capitalize leading-none whitespace-nowrap">
+              <span className="font-normal text-[15px] text-[#ECECEC] capitalize leading-none">
                 Comments
               </span>
             </div>
@@ -464,15 +423,15 @@ export default function MovieDetailPage() {
                 How Did You Feel About This?
               </h2>
 
-              {/* Reaction Buttons Row - Fixed Width 130px, Does Not Stretch Across Div */}
-              <div className="flex items-center gap-[28px] flex-wrap">
+              {/* Reaction Buttons Row - Permanent Border, Gets Darker When Clicked */}
+              <div className="flex items-center gap-4 sm:gap-6 flex-wrap sm:flex-nowrap">
                 {/* Like Button */}
                 <button
                   type="button"
                   onClick={() => handleReactionClick("like")}
-                  className={`h-[59px] w-[130px] rounded-[10px] border border-[#535353] px-3.5 py-2.5 flex items-center justify-center gap-3 cursor-pointer transition-colors duration-150 shrink-0 ${userReaction === "like"
-                    ? "bg-[#181818] shadow-inner"
-                    : "bg-[#282828]"
+                  className={`h-[60px] flex-1 min-w-[130px] rounded-[10px] border border-[#535353] px-4 py-2.5 flex items-center justify-center gap-3.5 cursor-pointer transition-colors duration-150 ${userReaction === "like"
+                    ? "bg-[#181818] border-[#535353] shadow-inner"
+                    : "bg-[#282828] hover:bg-[#202020]"
                     }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -493,9 +452,9 @@ export default function MovieDetailPage() {
                 <button
                   type="button"
                   onClick={() => handleReactionClick("love")}
-                  className={`h-[59px] w-[130px] rounded-[10px] border border-[#535353] px-3.5 py-2.5 flex items-center justify-center gap-3 cursor-pointer transition-colors duration-150 shrink-0 ${userReaction === "love"
-                    ? "bg-[#181818] shadow-inner"
-                    : "bg-[#282828]"
+                  className={`h-[60px] flex-1 min-w-[130px] rounded-[10px] border border-[#535353] px-4 py-2.5 flex items-center justify-center gap-3.5 cursor-pointer transition-colors duration-150 ${userReaction === "love"
+                    ? "bg-[#181818] border-[#535353] shadow-inner"
+                    : "bg-[#282828] hover:bg-[#202020]"
                     }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -516,9 +475,9 @@ export default function MovieDetailPage() {
                 <button
                   type="button"
                   onClick={() => handleReactionClick("favorite")}
-                  className={`h-[59px] w-[130px] rounded-[10px] border border-[#535353] px-3.5 py-2.5 flex items-center justify-center gap-3 cursor-pointer transition-colors duration-150 shrink-0 ${userReaction === "favorite"
-                    ? "bg-[#181818] shadow-inner"
-                    : "bg-[#282828]"
+                  className={`h-[60px] flex-1 min-w-[130px] rounded-[10px] border border-[#535353] px-4 py-2.5 flex items-center justify-center gap-3.5 cursor-pointer transition-colors duration-150 ${userReaction === "favorite"
+                    ? "bg-[#181818] border-[#535353] shadow-inner"
+                    : "bg-[#282828] hover:bg-[#202020]"
                     }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -539,14 +498,14 @@ export default function MovieDetailPage() {
                 <button
                   type="button"
                   onClick={() => handleReactionClick("dislike")}
-                  className={`h-[59px] w-[130px] rounded-[10px] border border-[#535353] px-3.5 py-2.5 flex items-center justify-center gap-3 cursor-pointer transition-colors duration-150 shrink-0 ${userReaction === "dislike"
-                    ? "bg-[#181818] shadow-inner"
-                    : "bg-[#282828]"
+                  className={`h-[60px] flex-1 min-w-[130px] rounded-[10px] border border-[#535353] px-4 py-2.5 flex items-center justify-center gap-3.5 cursor-pointer transition-colors duration-150 ${userReaction === "dislike"
+                    ? "bg-[#181818] border-[#535353] shadow-inner"
+                    : "bg-[#282828] hover:bg-[#202020]"
                     }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="/icons/dislike.png"
+                    src="/icons/dislike .png"
                     alt="Dislike"
                     className="w-5 h-5 object-contain shrink-0"
                   />
@@ -568,7 +527,7 @@ export default function MovieDetailPage() {
                   </span>
                   <div className="flex-1 h-[10px] bg-[#3B3A3A] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-[#3F7F00] rounded-full transition-all duration-300"
+                      className="h-full bg-[#34d399] rounded-full transition-all duration-300"
                       style={{ width: `${reactions.like.percent}%` }}
                     />
                   </div>
@@ -584,7 +543,7 @@ export default function MovieDetailPage() {
                   </span>
                   <div className="flex-1 h-[10px] bg-[#3B3A3A] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-[#FFCC00] rounded-full transition-all duration-300"
+                      className="h-full bg-[#fbbf24] rounded-full transition-all duration-300"
                       style={{ width: `${reactions.love.percent}%` }}
                     />
                   </div>
@@ -600,7 +559,7 @@ export default function MovieDetailPage() {
                   </span>
                   <div className="flex-1 h-[10px] bg-[#3B3A3A] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-[#C1004B] rounded-full transition-all duration-300"
+                      className="h-full bg-[#f472b6] rounded-full transition-all duration-300"
                       style={{ width: `${reactions.favorite.percent}%` }}
                     />
                   </div>
@@ -616,7 +575,7 @@ export default function MovieDetailPage() {
                   </span>
                   <div className="flex-1 h-[10px] bg-[#3B3A3A] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-[#FF0000] rounded-full transition-all duration-300"
+                      className="h-full bg-[#ef4444] rounded-full transition-all duration-300"
                       style={{ width: `${reactions.dislike.percent}%` }}
                     />
                   </div>
@@ -636,8 +595,7 @@ export default function MovieDetailPage() {
                 about
               </h2>
               <p className="text-[#C0C0C0] font-normal text-[14px] leading-[22px] uppercase">
-                {movie.overview ||
-                  "In a world divided into four nations—Water, Earth, Fire, and Air—only the Avatar can master all four elements and maintain balance. After disappearing for a hundred years, Aang, the last surviving Airbender, awakens to find the world consumed by war. Alongside his friends Katara, Sokka, and later Toph, he embarks on an epic journey to master the elements, confront the Fire Nation, and restore peace to the world."}
+                {movie.overview || "No synopsis available for this title."}
               </p>
             </div>
 
@@ -653,74 +611,69 @@ export default function MovieDetailPage() {
               </div>
 
               {/* Actor Img Row */}
-              <div className="relative flex items-center">
-                <div
-                  ref={castScrollRef}
-                  className="flex items-center gap-4 overflow-x-auto pb-2 [scrollbar-width:none] w-full"
-                >
-                  {(castList.length > 0
-                    ? castList
-                    : [
-                      { name: "Gordon Cormier", role: "Aang Airbender" },
-                      { name: "Kiawentiio", role: "Katara Waterbender" },
-                      { name: "Ian Ousley", role: "Sokka Warrior" },
-                      { name: "Dallas Liu", role: "Prince Zuko" },
-                      { name: "Paul Sun-Hyung Lee", role: "Uncle Iroh" },
-                      { name: "Daniel Dae Kim", role: "Fire Lord Ozai" },
-                    ]
-                  ).map((member: any, idx: number) => {
-                    const actorName =
-                      typeof member === "string"
-                        ? member
-                        : member.name || member.actor || "Actor";
-                    const charName =
-                      typeof member === "object"
-                        ? member.role || member.character || actorName
-                        : actorName;
-                    const avatarSrc =
-                      typeof member === "object" &&
-                        (member.profile_path || member.image)
-                        ? member.profile_path || member.image
-                        : `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80&sig=${idx}`;
+              <div className="relative flex items-center min-w-0">
+                {castList.length === 0 ? (
+                  <span className="text-[#C0C0C0] text-[14px]">No cast information available.</span>
+                ) : (
+                  <>
+                    <div
+                      ref={castScrollRef}
+                      className="flex-1 min-w-0 flex items-center gap-4 overflow-x-auto pb-2 [scrollbar-width:none]"
+                    >
+                      {castList.map((member: any, idx: number) => {
+                        const actorName =
+                          typeof member === "string"
+                            ? member
+                            : member.name || member.actor || "Actor";
+                        const charName =
+                          typeof member === "object"
+                            ? member.role || member.character || actorName
+                            : actorName;
+                        const avatarSrc =
+                          typeof member === "object" &&
+                            (member.profile_path || member.image)
+                            ? member.profile_path || member.image
+                            : `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80&sig=${idx}`;
 
-                    return (
-                      <div
-                        key={idx}
-                        className="flex flex-col items-center gap-2 shrink-0 w-[141px]"
-                      >
-                        {/* Circle Avatar (Ellipse 6) */}
-                        <div className="relative w-[70px] h-[70px] rounded-full overflow-hidden bg-[#D9D9D9] shrink-0 border border-[#535353]">
-                          <Image
-                            src={avatarSrc}
-                            alt={actorName}
-                            fill
-                            unoptimized
-                            className="object-cover object-top"
-                          />
-                        </div>
-                        {/* Name Info */}
-                        <div className="flex flex-col items-center text-center w-full leading-tight">
-                          <span className="font-medium text-[14px] text-white capitalize truncate w-full">
-                            {charName}
-                          </span>
-                          <span className="font-normal text-[12px] text-[#C0C0C0] capitalize truncate w-full">
-                            {actorName}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                        return (
+                          <div
+                            key={idx}
+                            className="flex flex-col items-center gap-2 shrink-0 w-[141px]"
+                          >
+                            {/* Circle Avatar (Ellipse 6) */}
+                            <div className="relative w-[70px] h-[70px] rounded-full overflow-hidden bg-[#D9D9D9] shrink-0 border border-[#535353]">
+                              <Image
+                                src={avatarSrc}
+                                alt={actorName}
+                                fill
+                                unoptimized
+                                className="object-cover object-top"
+                              />
+                            </div>
+                            {/* Name Info */}
+                            <div className="flex flex-col items-center text-center w-full leading-tight">
+                              <span className="font-medium text-[14px] text-white capitalize truncate w-full">
+                                {charName}
+                              </span>
+                              <span className="font-normal text-[12px] text-[#C0C0C0] capitalize truncate w-full">
+                                {actorName}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
 
-                {/* Right Scroll Arrow (Frame 39) */}
-                <button
-                  type="button"
-                  onClick={scrollCastRight}
-                  className="w-[36px] h-[36px] rounded-full bg-[#4F4E4E]/80 hover:bg-[#666666] border border-white/20 flex items-center justify-center shrink-0 ml-2 cursor-pointer transition-colors"
-                  aria-label="Scroll cast right"
-                >
-                  <ChevronRight size={18} className="text-white" />
-                </button>
+                    <button
+                      type="button"
+                      onClick={scrollCastRight}
+                      className="w-[36px] h-[36px] rounded-full bg-[#4F4E4E]/80 hover:bg-[#666666] border border-white/20 flex items-center justify-center shrink-0 ml-2 cursor-pointer transition-colors"
+                      aria-label="Scroll cast right"
+                    >
+                      <ChevronRight size={18} className="text-white" />
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
@@ -1035,50 +988,25 @@ export default function MovieDetailPage() {
             </h2>
 
             <div className="flex flex-col gap-3">
-              {(recommendations.length > 0
-                ? recommendations
-                : [
-                  {
-                    id: "rec1",
-                    title: "The First Frost",
-                    year: "2025",
-                    category: "Drama",
-                    user_rating: 9.8,
-                    poster: DEFAULT_POSTER,
-                  },
-                  {
-                    id: "rec2",
-                    title: "Crash Landing on You",
-                    year: "2025",
-                    category: "Drama",
-                    user_rating: 9.8,
-                    poster: DEFAULT_POSTER,
-                  },
-                  {
-                    id: "rec3",
-                    title: "Purple Hearts",
-                    year: "2022",
-                    category: "Movie",
-                    user_rating: 9.8,
-                    poster: DEFAULT_POSTER,
-                  },
-                ]
-              ).map((item: any) => {
-                const itemPoster =
-                  item.posterUrl ||
-                  item.poster ||
-                  (item.poster_path
-                    ? item.poster_path.startsWith("http")
-                      ? item.poster_path
-                      : `https://image.tmdb.org/t/p/w500${item.poster_path}`
-                    : DEFAULT_POSTER);
+              {recommendations.length === 0 ? (
+                <div className="text-[#C0C0C0] text-sm py-4">No recommendations available.</div>
+              ) : (
+                recommendations.map((item: any) => {
+                  const itemPoster =
+                    item.posterUrl ||
+                    item.poster ||
+                    (item.poster_path
+                      ? item.poster_path.startsWith("http")
+                        ? item.poster_path
+                        : `https://image.tmdb.org/t/p/w500${item.poster_path}`
+                      : DEFAULT_POSTER);
 
-                const itemScoreRaw =
-                  item.user_rating ?? item.vote_average ?? null;
-                const itemScore =
-                  itemScoreRaw !== null && itemScoreRaw !== undefined
-                    ? Number(itemScoreRaw).toFixed(1)
-                    : "9.8";
+                  const itemScoreRaw =
+                    item.user_rating ?? item.vote_average ?? null;
+                  const itemScore =
+                    itemScoreRaw !== null && itemScoreRaw !== undefined
+                      ? Number(itemScoreRaw).toFixed(1)
+                      : "N/A";
 
                 return (
                   <Link
@@ -1136,7 +1064,7 @@ export default function MovieDetailPage() {
                     </div>
                   </Link>
                 );
-              })}
+              }))}
             </div>
           </section>
 

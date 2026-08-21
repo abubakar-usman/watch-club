@@ -34,9 +34,7 @@ export default function LoginPage() {
                 LIVE
               </span>
               <p className="font-mono text-[11px] text-gray/60 leading-relaxed">
-                Signing in with your real Supabase account. Your session is
-                securely stored via{" "}
-                <code className="text-emerald-400/80">httpOnly</code> cookies.
+                Sign in with your WatchClub account powered by Better Auth &amp; PostgreSQL.
               </p>
             </div>
 

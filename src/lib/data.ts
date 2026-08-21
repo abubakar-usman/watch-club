@@ -243,13 +243,7 @@ export function withRepositoryAuth(
 
     if (authHeader && authHeader.startsWith("Bearer ")) {
       token = authHeader.substring(7);
-      // Basic decode or default user ID for demonstration auth
-      userId = "5d4ff78e-4631-41e6-b496-b50d1cd9d146";
-    }
-
-    if (options.auth === "user" && !userId) {
-      // Default to demo user for frontend experience if token isn't passed
-      userId = "5d4ff78e-4631-41e6-b496-b50d1cd9d146";
+      userId = token;
     }
 
     const ctx: RepositoryContext = { userId, token };

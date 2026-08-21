@@ -35,51 +35,7 @@ interface PostItem {
   commentList: CommentItem[];
 }
 
-const initialPosts: PostItem[] = [
-  {
-    id: 1,
-    username: "Crunchy Roll",
-    avatar: "/popcorn.png",
-    content: "I Just Completed Demon Slayer Hashira Arc Movie. Fantastic!!!!!!!",
-    likes: 89,
-    liked: false,
-    commentsCount: 6,
-    timestamp: "2 hours ago",
-    moviePoster: "https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=800&auto=format&fit=crop",
-    commentList: [
-      { id: 101, username: "AnimeFan99", avatar: "/popcorn.png", text: "Agreed! The animation was insane!", timestamp: "1 hour ago" },
-      { id: 102, username: "ZenitsuSupporter", avatar: "/popcorn.png", text: "Can't wait for the next movie installment!", timestamp: "45 mins ago" },
-    ],
-  },
-  {
-    id: 2,
-    username: "CinePhile",
-    avatar: "/popcorn.png",
-    content: "Should I watch Dark? Is it really that confusing or just requires full attention?",
-    likes: 142,
-    liked: false,
-    commentsCount: 18,
-    timestamp: "5 hours ago",
-    moviePoster: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800&auto=format&fit=crop",
-    commentList: [
-      { id: 103, username: "TimeTraveler", avatar: "/popcorn.png", text: "Keep a family tree chart handy and pay attention, totally worth it!", timestamp: "4 hours ago" },
-    ],
-  },
-  {
-    id: 3,
-    username: "KdramaFanatic",
-    avatar: "/popcorn.png",
-    content: "Recommend a thriller under 10 episodes on Netflix! Need something bingeable tonight.",
-    likes: 64,
-    liked: false,
-    commentsCount: 12,
-    timestamp: "8 hours ago",
-    moviePoster: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=800&auto=format&fit=crop",
-    commentList: [
-      { id: 104, username: "BingeWatcher", avatar: "/popcorn.png", text: "Watch My Name or Extracurricular! Both are short and thrilling.", timestamp: "7 hours ago" },
-    ],
-  },
-];
+const initialPosts: PostItem[] = [];
 
 export default function CommunityPage() {
   const [posts, setPosts] = useState<PostItem[]>(initialPosts);
@@ -215,7 +171,12 @@ export default function CommunityPage() {
 
         {/* 3. DISCUSSION FEED */}
         <section className="space-y-6">
-          {posts.map((post) => (
+          {posts.length === 0 ? (
+            <div className="bg-[#302F2F] border border-white/10 rounded-[10px] p-10 text-center text-[#C7C7C7] text-sm font-medium">
+              No community posts yet. Share your thoughts above!
+            </div>
+          ) : (
+            posts.map((post) => (
             <article
               key={post.id}
               className="bg-[#302F2F] border border-white/10 rounded-[10px] p-6 shadow-md transition-all flex flex-col gap-4"
@@ -334,7 +295,7 @@ export default function CommunityPage() {
                 </div>
               )}
             </article>
-          ))}
+          )))}
         </section>
       </div>
 

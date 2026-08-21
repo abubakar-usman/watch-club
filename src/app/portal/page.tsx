@@ -22,11 +22,11 @@ import { Movie, UserProfile, WatchlistMovie, DiscussionPost } from "@/lib/types"
 
 const initialUserProfile: UserProfile = {
   id: "",
-  fullName: "Maryam Amir",
-  username: "@Maryam19",
-  bio: 'Living Inside My Own World Of "Make-Believe."',
-  email: "maryam@watchclub.demo",
-  age: 24,
+  fullName: "WatchClub Member",
+  username: "@member",
+  bio: "",
+  email: "",
+  age: 0,
   avatarUrl: "/popcorn.png",
   genrePreferences: [],
   joinedDate: "",
@@ -77,7 +77,7 @@ export default function PortalPage() {
   // Sync auth user to profile if available
   useEffect(() => {
     if (user) {
-      const name = user.name || "Maryam Amir";
+      const name = user.name || "WatchClub Member";
       setProfile((prev) => ({
         ...prev,
         id: user.id || prev.id,
@@ -291,8 +291,8 @@ export default function PortalPage() {
               id="tab-discussion"
               onClick={() => setActiveTab("discussion")}
               className={`px-4 py-2 rounded-[16px] text-[14px] font-medium transition-all ${activeTab === "discussion"
-                  ? "bg-[#3D3D3D] text-white"
-                  : "text-white hover:text-white/80"
+                ? "bg-[#3D3D3D] text-white"
+                : "text-white hover:text-white/80"
                 }`}
             >
               Discussion
@@ -302,8 +302,8 @@ export default function PortalPage() {
               id="tab-watchlist"
               onClick={() => setActiveTab("watchlist")}
               className={`px-5 py-2 rounded-[16px] text-[14px] font-medium transition-all ${activeTab === "watchlist"
-                  ? "bg-[#3D3D3D] text-white"
-                  : "text-white hover:text-white/80"
+                ? "bg-[#3D3D3D] text-white"
+                : "text-white hover:text-white/80"
                 }`}
             >
               Watchlist
@@ -336,8 +336,8 @@ export default function PortalPage() {
                       setIsSortOpen(false);
                     }}
                     className={`w-full text-left px-4 py-3 text-[13px] transition-colors ${sortKey === opt.key
-                        ? "text-[#E50914] bg-[#E50914]/10"
-                        : "text-[#C7C7C7] hover:text-white hover:bg-white/5"
+                      ? "text-[#E50914] bg-[#E50914]/10"
+                      : "text-[#C7C7C7] hover:text-white hover:bg-white/5"
                       }`}
                   >
                     {opt.label}
@@ -465,7 +465,7 @@ export default function PortalPage() {
             ) : (
               /* FRAME 103: EMPTY WATCHLIST STATE (Exact CSS Spec) */
               <div
-                className="w-full rounded-[12px] bg-[#282828] border border-[#535353] py-[40px] px-[16px] sm:px-[84px] flex flex-col items-center justify-center gap-[28px] text-center"
+                className="w-full py-[40px] px-[16px] sm:px-[84px] flex flex-col items-center justify-center gap-[28px] text-center"
                 id="watchlist-empty-state"
               >
                 {/* Image: 248px x 200px */}

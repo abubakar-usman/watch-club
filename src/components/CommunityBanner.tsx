@@ -15,19 +15,19 @@ const defaultTopics: TrendingTopic[] = [
   {
     id: "dark-discussion",
     title: "Should i watch dark? Is it too confusing?",
-    replies: "456 Replies",
+    replies: "0 Replies",
     href: "/community",
   },
   {
     id: "k-thriller",
     title: "Best korean thriller on netflix right now?",
-    replies: "456 Replies",
+    replies: "0 Replies",
     href: "/community",
   },
   {
     id: "short-thriller",
     title: "Recommend a thriller under 10 ep?",
-    replies: "456 Replies",
+    replies: "0 Replies",
     href: "/community",
   },
 ];
@@ -59,13 +59,17 @@ export default function CommunityBanner({
 
           {/* LEFT SIDE: Heading & Description */}
           <div className="flex flex-col gap-4">
-            <h2 className="text-[32px] font-semibold leading-[38px] uppercase text-white font-roboto">
+            {/* Heading: whitespace-nowrap prevents it from ever breaking into two lines */}
+            <h2 className="text-[32px] font-semibold leading-[38px] uppercase text-white font-roboto whitespace-nowrap">
               Join the community
             </h2>
-            <p className="text-[#CCCCCC] text-[16px] font-medium leading-[19px] uppercase max-w-[380px]">
+
+            {/* Description: line-clamp-2 limits it to 2 lines, max-w adjusted to force the wrap */}
+            <p className="text-[#CCCCCC] text-[16px] font-medium leading-[19px] lowercase first-letter:uppercase max-w-[340px] font-[Inter] line-clamp-2">
               Ask, discuss and share recommendations with thousands of netflix
               fans like you.
             </p>
+
             <Link
               href="/community"
               className="bg-[#E60813] text-white text-base font-bold py-[12px] px-[16px] rounded-[10px] flex items-center gap-3 w-fit transition-transform hover:scale-105 active:scale-95"

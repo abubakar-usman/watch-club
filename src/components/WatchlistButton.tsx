@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Bookmark, Check } from "lucide-react";
+import { Plus, Check } from "lucide-react";
 
 export default function WatchlistButton({ movieId }: { movieId: number }) {
   const [inWatchlist, setInWatchlist] = useState(false);
@@ -56,7 +56,7 @@ export default function WatchlistButton({ movieId }: { movieId: number }) {
           : "bg-brand-red hover:bg-brand-red-dark text-white shadow-lg shadow-brand-red/20"
       }`}
     >
-      {inWatchlist ? <Check size={18} /> : <Bookmark size={18} />}
+      {inWatchlist ? <Check size={18} /> : <Plus size={18} />}
       <span>{inWatchlist ? "Saved to Watchlist" : "Add to Watchlist"}</span>
     </button>
   );
