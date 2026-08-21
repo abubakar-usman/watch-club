@@ -204,15 +204,19 @@ export default function HeroBanner({
             {/* Add To Watchlist Button */}
             <button
               type="button"
-              className="w-[164px] h-[37px] bg-white text-black rounded-[40px] pt-[10px] pb-[10px] px-[16px] flex items-center justify-center gap-[4px] border-0 transition-colors hover:bg-gray-100 active:scale-95"
-              onClick={() => setInWatchlist(!inWatchlist)}
+              className="h-[37px] px-5 !bg-white !text-black rounded-full flex items-center justify-center gap-2 border-0 outline-none transition-transform active:scale-95 cursor-pointer select-none"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setInWatchlist((prev) => !prev);
+              }}
             >
               <img
                 src="/icons/play.png"
-                alt=""
-                className="w-[16px] h-[16px] object-contain shrink-0"
+                alt="Play icon"
+                className="w-4 h-4 object-contain shrink-0 pointer-events-none"
               />
-              <span className="text-[14px] font-bold leading-none whitespace-nowrap">
+              <span className="text-sm font-bold leading-none whitespace-nowrap pointer-events-none">
                 {inWatchlist ? "In Watchlist" : "Add To Watchlist"}
               </span>
             </button>
@@ -220,9 +224,9 @@ export default function HeroBanner({
             {/* More Info Button */}
             <Link
               href={`/movie/${heroData.id || '#'}`}
-              className="w-[97px] h-[37px] bg-[#515151]/90 text-white rounded-[40px] pt-[10px] pb-[10px] px-[16px] flex items-center justify-center gap-[8px] transition-colors hover:bg-[#515151] active:scale-95"
+              className="h-[37px] px-5 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-full flex items-center justify-center gap-2 transition-all hover:bg-white/20 active:scale-95"
             >
-              <span className="text-[14px] font-bold leading-none whitespace-nowrap">
+              <span className="text-sm font-bold leading-none whitespace-nowrap">
                 More Info
               </span>
             </Link>

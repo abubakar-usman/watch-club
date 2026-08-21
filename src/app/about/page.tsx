@@ -46,31 +46,18 @@ export default function AboutPage() {
               <Link
                 href="/movies"
                 id="about-explore-btn"
-                className="flex flex-row justify-center items-center gap-1 px-3 py-3 rounded-[40px] bg-[#E60813] text-white text-[14px] font-medium capitalize"
-                style={{ fontFamily: "Inter, sans-serif", width: "109px", height: "40px" }}
+                className="flex flex-row justify-center items-center gap-2 rounded-[40px] bg-[#E60813] text-white text-[14px] font-medium capitalize transition-transform active:scale-95"
+                style={{
+                  fontFamily: "Inter, sans-serif",
+                  width: "109px",
+                  height: "40px"
+                }}
               >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M3.33337 8H12.6667"
-                    stroke="white"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M8.66663 4L12.6666 8L8.66663 12"
-                    stroke="white"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+                <img
+                  src="/icons/wplay.png"
+                  alt=""
+                  className="w-4 h-4 object-contain"
+                />
                 Explore
               </Link>
 
@@ -78,39 +65,18 @@ export default function AboutPage() {
               <Link
                 href="/community"
                 id="about-join-community-btn"
-                className="flex flex-row justify-center items-center gap-1 px-3 py-3 rounded-[40px] border border-white text-white text-[14px] font-medium capitalize"
+                className="flex flex-row justify-center items-center gap-2 rounded-[40px] border border-white text-white text-[14px] font-medium capitalize transition-transform active:scale-95"
                 style={{
                   fontFamily: "Inter, sans-serif",
                   width: "155px",
                   height: "40px",
                 }}
               >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <line
-                    x1="8"
-                    y1="3.33"
-                    x2="8"
-                    y2="12.67"
-                    stroke="white"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                  <line
-                    x1="3.33"
-                    y1="8"
-                    x2="12.67"
-                    y2="8"
-                    stroke="white"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
+                <img
+                  src="/icons/add.png"
+                  alt=""
+                  className="w-4 h-4 object-contain"
+                />
                 Join Community
               </Link>
             </div>
@@ -245,7 +211,11 @@ export default function AboutPage() {
             Real opinions from real viewers — not algorithms, not ads.
           </p>
         </div>
+        <div>
+
+        </div>
       </div>
+
     </main>
   );
 }
