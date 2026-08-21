@@ -1,6 +1,11 @@
 "use client";
 
-import React, { useRef, useEffect, useState, useCallback } from "react";
+import React, {
+  useRef,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -15,119 +20,186 @@ export interface TopTenItem {
   image: string;
 }
 
-interface TopTenApiMovie {
-  id?: string | number;
-  title?: string;
-  name?: string;
-  posterUrl?: string;
-  poster?: string;
-  poster_path?: string;
-  genre_names?: string[];
-  genres?: (string | { name: string })[];
-  category?: string;
-}
+/* =========================================================
+   SINGLE CARD
 
-function TopTenCardItem({ item }: { item: TopTenItem }) {
-  const [imgSrc, setImgSrc] = useState<string>(item.image || DEFAULT_POSTER);
+   Number + poster are ONE horizontal composition.
 
-  useEffect(() => {
-    setImgSrc(item.image || DEFAULT_POSTER);
-  }, [item.image]);
+   NUMBER
+   - left
+   - oversized
+   - behind poster
+
+   POSTER
+   - right
+   - overlaps number
+   - above number
+   ========================================================= */
+
+function TopTenCardItem({
+  item,
+}: {
+  item: TopTenItem;
+}) {
+  const [imgSrc, setImgSrc] = useState<string>(
+    item.image || DEFAULT_POSTER
+  );
 
   return (
     <Link
       href={item.id ? `/movie/${item.id}` : "#"}
       draggable={false}
-      className="relative flex-none w-[175px] flex items-end cursor-pointer select-none group"
+      className="
+        relative
+        flex-none
+        w-[240px]
+        h-[199px]
+        cursor-pointer
+        select-none
+        overflow-visible
+      "
     >
-      {/* Rank number — outlined */}
+      {/* =====================================================
+         NUMBER
+         ===================================================== */}
+
       <span
-        className="absolute left-[-15px] bottom-[-15px] text-[7.5rem] font-black leading-[0.8] text-black pointer-events-none z-[1] transition-all duration-150"
-        style={{ WebkitTextStroke: "3px #555555" }}
+        className="
+          absolute
+          left-0
+          top-[-51px]
+          z-[1]
+          pointer-events-none
+          select-none
+          whitespace-nowrap
+          font-['Inter']
+          font-[800]
+          text-[264px]
+          leading-[100%]
+          tracking-[0px]
+          text-transparent
+        "
+        style={{
+          WebkitTextStroke: "2px #959292",
+          fontFamily: "'Inter', sans-serif",
+        }}
       >
         {item.rank}
       </span>
 
-      {/* Poster card */}
-      <div className="relative w-[155px] h-[225px] ml-auto rounded-2xl overflow-hidden bg-[#333333] border-none shadow-[0_6px_18px_rgba(0,0,0,0.5)] z-[2] transition-all duration-250 group-hover:-translate-y-1.5 group-hover:shadow-[0_12px_28px_rgba(0,0,0,0.7)] max-[768px]:w-[130px] max-[768px]:h-[190px]">
+      {/* =====================================================
+         POSTER
+         ===================================================== */}
+
+      <div
+        className="
+          absolute
+          left-[100.45px]
+          top-0
+          z-[2]
+          w-[139.45px]
+          h-[198.1px]
+          overflow-hidden
+          bg-[#333333]
+        "
+        style={{
+          boxShadow: "-10px 0px 20px rgba(0, 0, 0, 0.5)",
+          borderRadius: "10px 20px 20px 10px",
+        }}
+      >
         <Image
           src={imgSrc}
           alt={item.title || "Poster"}
           fill
-          sizes="160px"
-          className="object-cover rounded-2xl transition-opacity duration-150"
+          sizes="140px"
+          className="object-cover"
           unoptimized
           draggable={false}
           onError={() => setImgSrc(DEFAULT_POSTER)}
         />
-
-        {/* Hover overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex flex-col justify-end p-3">
-          <div className="text-[0.875rem] font-bold text-white mb-0.5 truncate">{item.title}</div>
-          <div className="text-[0.75rem] text-[#CCCCCC]">{item.category}</div>
-        </div>
       </div>
     </Link>
   );
 }
 
-export default function TopTenCarousel({ items: initialItems }: { items?: TopTenItem[] }) {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [items, setItems] = useState<TopTenItem[]>(initialItems || []);
-  const [loading, setLoading] = useState(!initialItems || initialItems.length === 0);
+/* =========================================================
+   TOP TEN CAROUSEL
+   ========================================================= */
 
-  const [dashCount, setDashCount] = useState<number>(3);
-  const [activeIndex, setActiveIndex] = useState<number>(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [scrollLeftState, setScrollLeftState] = useState(0);
+export default function TopTenCarousel({
+  items: initialItems,
+}: {
+  items?: TopTenItem[];
+}) {
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  const [items, setItems] = useState<TopTenItem[]>(
+    initialItems || []
+  );
+
+  const [loading, setLoading] = useState(
+    !initialItems || initialItems.length === 0
+  );
+
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  /* =========================================================
+     FETCH MOVIES
+     ========================================================= */
 
   useEffect(() => {
-    if (initialItems && initialItems.length > 0) return;
+    if (initialItems && initialItems.length > 0) {
+      return;
+    }
 
     async function fetchTopTen() {
       try {
         const res = await fetch("/api/movies/trending");
-        if (!res.ok) throw new Error("Failed to fetch trending movies");
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch");
+        }
 
         const data = await res.json();
-        const movies = data.results || [];
 
-        const formatted: TopTenItem[] = movies.slice(0, 10).map((m: TopTenApiMovie, idx: number) => {
-          const imagePath =
-            m.posterUrl ||
-            m.poster ||
-            (m.poster_path
-              ? m.poster_path.startsWith("http")
-                ? m.poster_path
-                : `https://image.tmdb.org/t/p/w500${m.poster_path}`
-              : "") ||
-            DEFAULT_POSTER;
+        const formatted: TopTenItem[] = (data.results || [])
+          .slice(0, 10)
+          .map((m: any, idx: number) => {
+            const image =
+              m.posterUrl ||
+              m.poster ||
+              (m.poster_path
+                ? m.poster_path.startsWith("http")
+                  ? m.poster_path
+                  : `https://image.tmdb.org/t/p/w500${m.poster_path}`
+                : DEFAULT_POSTER);
 
-          let category = "Popular";
-          if (Array.isArray(m.genre_names) && m.genre_names.length > 0) {
-            category = m.genre_names.slice(0, 2).join(" • ");
-          } else if (Array.isArray(m.genres) && m.genres.length > 0) {
-            category = m.genres
-              .map((g) => (typeof g === "string" ? g : g.name))
-              .slice(0, 2)
-              .join(" • ");
-          } else if (m.category) {
-            category = m.category;
-          }
+            const category =
+              Array.isArray(m.genre_names) &&
+                m.genre_names.length > 0
+                ? m.genre_names
+                  .slice(0, 2)
+                  .join(" • ")
+                : m.category || "Popular";
 
-          return {
-            rank: idx + 1,
-            id: m.id,
-            title: m.title || m.name || "Untitled",
-            category,
-            image: imagePath,
-          };
-        });
+            return {
+              rank: idx + 1,
+              id: m.id,
+              title:
+                m.title ||
+                m.name ||
+                "Untitled",
+              category,
+              image: image || DEFAULT_POSTER,
+            };
+          });
 
         setItems(formatted);
       } catch (err) {
-        console.error("TopTenCarousel fetch error:", err);
+        console.error(
+          "TopTenCarousel fetch error:",
+          err
+        );
       } finally {
         setLoading(false);
       }
@@ -136,128 +208,232 @@ export default function TopTenCarousel({ items: initialItems }: { items?: TopTen
     fetchTopTen();
   }, [initialItems]);
 
-  const updatePagination = useCallback(() => {
+  /* =========================================================
+     UPDATE ACTIVE SLIDE
+     ========================================================= */
+
+  const handleScroll = useCallback(() => {
     const track = trackRef.current;
+
     if (!track) return;
 
-    const scrollWidth = track.scrollWidth;
-    const clientWidth = track.clientWidth;
-    const maxScroll = scrollWidth - clientWidth;
+    const itemWidth = 240 + 32;
 
-    if (maxScroll <= 10) {
-      setDashCount(1);
-      setActiveIndex(0);
-      return;
-    }
+    const index = Math.round(
+      track.scrollLeft / itemWidth
+    );
 
-    const calculatedPages = Math.ceil(scrollWidth / clientWidth);
-    const count = Math.min(8, Math.max(2, calculatedPages));
-    setDashCount(count);
-
-    const scrollLeft = track.scrollLeft;
-    const progress = Math.min(1, Math.max(0, scrollLeft / maxScroll));
-    const idx = Math.min(count - 1, Math.round(progress * (count - 1)));
-    setActiveIndex(idx);
+    setActiveIndex(index);
   }, []);
 
-  useEffect(() => {
-    updatePagination();
-    window.addEventListener("resize", updatePagination);
-    return () => window.removeEventListener("resize", updatePagination);
-  }, [items, updatePagination]);
+  /* =========================================================
+     IMPORTANT:
+     HANDLE MOUSE WHEEL
 
-  const handleScroll = () => {
-    updatePagination();
-  };
+     Vertical wheel:
+       → page scrolls
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!trackRef.current) return;
-    setIsDragging(true);
-    setStartX(e.pageX - trackRef.current.offsetLeft);
-    setScrollLeftState(trackRef.current.scrollLeft);
-  };
+     Horizontal wheel:
+       → movie cards scroll
+     ========================================================= */
 
-  const handleMouseLeave = () => setIsDragging(false);
-  const handleMouseUp = () => setIsDragging(false);
+  const handleWheel = useCallback(
+    (event: React.WheelEvent<HTMLDivElement>) => {
+      const track = trackRef.current;
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || !trackRef.current) return;
-    e.preventDefault();
-    const x = e.pageX - trackRef.current.offsetLeft;
-    const walk = (x - startX) * 1.5;
-    trackRef.current.scrollLeft = scrollLeftState - walk;
-  };
+      if (!track) return;
 
-  const handleDashClick = (i: number) => {
-    if (!trackRef.current) return;
-    const maxScroll = trackRef.current.scrollWidth - trackRef.current.clientWidth;
-    const targetScroll = (i / (dashCount - 1)) * maxScroll;
-    trackRef.current.scrollTo({ left: targetScroll, behavior: "smooth" });
-  };
+      /*
+       * If the user is using horizontal scrolling
+       * (trackpad horizontal gesture / Shift + wheel),
+       * move the movie cards.
+       */
+
+      if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
+        event.preventDefault();
+
+        track.scrollLeft += event.deltaX;
+
+        return;
+      }
+
+      /*
+       * Normal mouse wheel / vertical trackpad movement.
+       *
+       * DO NOT let the carousel trap the page.
+       *
+       * Send the vertical movement to the page instead.
+       */
+
+      if (Math.abs(event.deltaY) > 0) {
+        event.preventDefault();
+
+        window.scrollBy({
+          top: event.deltaY,
+          left: 0,
+          behavior: "auto",
+        });
+      }
+    },
+    []
+  );
+
+  /* =========================================================
+     RENDER
+     ========================================================= */
 
   return (
-    <section className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-5">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-[20px] font-semibold leading-[1.2] text-white capitalize">
+    <section
+      className="
+        w-full
+        max-w-[1328px]
+        mx-auto
+        flex
+        flex-col
+        items-start
+        gap-[8px]
+      "
+    >
+      {/* =====================================================
+         HEADER
+         ===================================================== */}
+
+      <div className="flex items-center justify-between w-full">
+        <h2
+          className="
+            w-max
+            h-[24px]
+            font-['Inter']
+            font-semibold
+            text-[20px]
+            leading-[120%]
+            text-white
+            capitalize
+            whitespace-nowrap
+          "
+        >
           Top 10 Recommendations For Today
         </h2>
 
-        {/* Dynamic Dash Progress Indicator */}
-        {!loading && items.length > 0 && dashCount > 1 && (
-          <div className="flex items-center gap-1.5">
-            {Array.from({ length: dashCount }).map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => handleDashClick(i)}
-                aria-label={`Go to page ${i + 1}`}
-                style={{
-                  width: i === activeIndex ? "24px" : "14px",
-                  height: "4px",
-                  borderRadius: "2px",
-                  backgroundColor: i === activeIndex ? "#FFFFFF" : "rgba(255,255,255,0.2)",
-                  border: "none",
-                  padding: 0,
-                  cursor: "pointer",
-                  transition: "all 0.25s ease-in-out",
-                }}
-              />
-            ))}
+        {/* =================================================
+           PAGINATION
+           ================================================= */}
+
+        {!loading && items.length > 0 && (
+          <div
+            className="
+              flex
+              items-center
+              gap-[4px]
+              w-[28px]
+            "
+          >
+            <div
+              className="
+                w-[12px]
+                h-0
+                border-[2px]
+                transition-colors
+                duration-300
+              "
+              style={{
+                borderColor:
+                  activeIndex === 0
+                    ? "#FFFFFF"
+                    : "#9A9191",
+              }}
+            />
+
+            <div
+              className="
+                w-[12px]
+                h-0
+                border-[2px]
+                transition-colors
+                duration-300
+              "
+              style={{
+                borderColor:
+                  activeIndex > 0
+                    ? "#FFFFFF"
+                    : "#9A9191",
+              }}
+            />
           </div>
         )}
       </div>
 
+      {/* =====================================================
+         LOADING
+         ===================================================== */}
+
       {loading ? (
-        <div className="flex gap-4 overflow-hidden py-4">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div
-              key={i}
-              className="w-[160px] h-[240px] bg-white/5 rounded-2xl flex-shrink-0 animate-pulse"
-            />
-          ))}
-        </div>
-      ) : items.length === 0 ? (
-        <div className="bg-black/30 border border-white/5 rounded-2xl p-8 text-center text-[#999999] font-mono text-sm">
-          No recommendations available today.
-        </div>
+        <div
+          className="
+            w-full
+            h-[250px]
+            bg-white/5
+            animate-pulse
+            rounded-lg
+          "
+        />
       ) : (
+        /* ===================================================
+           CAROUSEL VIEWPORT
+
+           IMPORTANT:
+
+           This is ONLY responsible for horizontal
+           scrolling.
+
+           Vertical wheel movement is manually sent
+           back to the page.
+           =================================================== */
+
         <div
           ref={trackRef}
           onScroll={handleScroll}
-          onMouseDown={handleMouseDown}
-          onMouseLeave={handleMouseLeave}
-          onMouseUp={handleMouseUp}
-          onMouseMove={handleMouseMove}
-          style={{
-            cursor: isDragging ? "grabbing" : "grab",
-            userSelect: isDragging ? "none" : "auto",
-          }}
-          className="flex gap-3 overflow-x-auto scroll-smooth pt-4 pb-6 px-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          onWheel={handleWheel}
+          className="
+            relative
+            w-full
+            h-[250px]
+            overflow-x-auto
+            overflow-y-hidden
+            scroll-smooth
+            [scrollbar-width:none]
+            [-ms-overflow-style:none]
+            [&::-webkit-scrollbar]:hidden
+          "
         >
-          {items.map((item) => (
-            <TopTenCardItem key={item.id ?? item.rank} item={item} />
-          ))}
+          {/* =================================================
+             HORIZONTAL TRACK
+
+             51px top padding gives the oversized numbers
+             enough room above the posters.
+
+             CARD ITSELF REMAINS 199px.
+             ================================================= */}
+
+          <div
+            className="
+              flex
+              flex-row
+              items-start
+              gap-[32px]
+              w-max
+              min-w-full
+              h-[199px]
+              pt-[51px]
+            "
+          >
+            {items.map((item) => (
+              <TopTenCardItem
+                key={item.id ?? item.rank}
+                item={item}
+              />
+            ))}
+          </div>
         </div>
       )}
     </section>

@@ -200,56 +200,47 @@ export default function HeroBanner({
           <p className="text-[#D1D1D1] text-base leading-[1.55] max-w-[580px] [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]">
             {heroData.description}
           </p>
-
-          <div className="flex items-center gap-4 mt-2 flex-wrap">
+          <div className="flex items-center gap-3 mt-6">
+            {/* Add To Watchlist Button */}
             <button
               type="button"
-              className="bg-white text-black text-[0.95rem] font-bold px-6 py-3 rounded-full inline-flex items-center gap-2 transition-all duration-150 shadow-[0_4px_15px_rgba(255,255,255,0.2)] hover:bg-[#E6E6E6] hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(255,255,255,0.3)]"
+              className="w-[164px] h-[37px] bg-white text-black rounded-[40px] pt-[10px] pb-[10px] px-[16px] flex items-center justify-center gap-[4px] border-0 transition-colors hover:bg-gray-100 active:scale-95"
               onClick={() => setInWatchlist(!inWatchlist)}
-              aria-label="Add to Watchlist"
             >
-              {inWatchlist ? (
-                <>
-                  <Check size={18} />
-                  <span>In Watchlist</span>
-                </>
-              ) : (
-                <>
-                  <Plus size={18} />
-                  <span>Add To Watchlist</span>
-                </>
-              )}
+              <img
+                src="/icons/play.png"
+                alt=""
+                className="w-[16px] h-[16px] object-contain shrink-0"
+              />
+              <span className="text-[14px] font-bold leading-none whitespace-nowrap">
+                {inWatchlist ? "In Watchlist" : "Add To Watchlist"}
+              </span>
             </button>
 
-            {heroData.id ? (
-              <Link
-                href={`/movie/${heroData.id}`}
-                className="bg-white/[0.08] backdrop-blur-[8px] text-white text-[0.95rem] font-bold px-6 py-3 rounded-full inline-flex items-center gap-2 border border-white/20 transition-all duration-150 hover:bg-white/[0.14] hover:border-white/40 hover:-translate-y-0.5"
-                aria-label="More Info"
-              >
-                <Info size={18} />
-                <span>More Info</span>
-              </Link>
-            ) : (
-              <button
-                type="button"
-                className="bg-white/[0.08] backdrop-blur-[8px] text-white text-[0.95rem] font-bold px-6 py-3 rounded-full inline-flex items-center gap-2 border border-white/20 transition-all duration-150 hover:bg-white/[0.14] hover:border-white/40 hover:-translate-y-0.5"
-                aria-label="More Info"
-              >
-                <Info size={18} />
-                <span>More Info</span>
-              </button>
-            )}
+            {/* More Info Button */}
+            <Link
+              href={`/movie/${heroData.id || '#'}`}
+              className="w-[97px] h-[37px] bg-[#515151]/90 text-white rounded-[40px] pt-[10px] pb-[10px] px-[16px] flex items-center justify-center gap-[8px] transition-colors hover:bg-[#515151] active:scale-95"
+            >
+              <span className="text-[14px] font-bold leading-none whitespace-nowrap">
+                More Info
+              </span>
+            </Link>
           </div>
         </div>
 
+        {/* Emmy Winner / Award Badge / Trending #1 */}
         {heroData.award && (
-          <div className="absolute bottom-14 right-12 bg-black/65 backdrop-blur-[12px] rounded-full px-4 py-2 flex items-center gap-2 text-white text-sm font-semibold border border-white/10 max-[768px]:hidden">
-            <Trophy size={16} />
+          <div className="absolute bottom-10 right-10 bg-[#2B2B2B]/80 backdrop-blur-sm rounded-full px-4 py-1.5 flex items-center gap-2 text-white text-[14px] font-medium border border-white/10">
+            <img
+              src="/icons/ew.png"
+              alt="EW"
+              className="w-5 h-5 object-contain shrink-0"
+            />
             <span>{heroData.award}</span>
           </div>
         )}
       </div>
-    </section>
+    </section >
   );
 }

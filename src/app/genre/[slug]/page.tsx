@@ -38,7 +38,7 @@ export default function GenrePage() {
   }, [rawSlug, categoryName]);
 
   return (
-    <main className="w-full min-h-screen space-y-8 py-6 bg-[#181818]">
+    <main className="w-full min-h-screen space-y-8 pb-6 bg-[#181818]">
       <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-3 pt-4">
         <div className="w-1 h-7 rounded-full bg-[#E50914]" />
         <h1 className="font-bold text-3xl text-white tracking-tight">{categoryName} Collection</h1>

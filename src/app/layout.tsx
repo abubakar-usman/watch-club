@@ -25,7 +25,7 @@ export default function RootLayout({
       <body className="bg-[#181818] text-white antialiased">
         <Navbar />
         <div id="app-root" className="min-h-screen flex flex-col pt-[84px] bg-[#181818]">
-          <div className="flex-1 w-full">{children}</div>
+          <div className="flex-1 w-full pt-6">{children}</div>
           <Footer />
         </div>
       </body>

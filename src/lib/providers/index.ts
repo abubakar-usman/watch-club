@@ -2,7 +2,7 @@ import { Movie, MovieProvider, MovieSearchResult } from "../types";
 
 const MOTN_KEY =
   process.env.STREAMING_AVAILABILITY_API_KEY ||
-  "motn-key-v4-k0Oczkbe1ZZoB4zEnqsya4gObwu1iKc0";
+  "motn-key-v4-VrRvgAQ4P6kd4WflHVvwRJY36mwlQS8Z";
 
 const MOTN_BASE_URL =
   process.env.STREAMING_AVAILABILITY_BASE_URL ||

@@ -9,6 +9,8 @@ import {
 } from "drizzle-orm/pg-core";
 
 // ── Better Auth Tables ──────────────────────────────────────────────────
+// Note: id generation for these tables is handled internally by Better Auth's
+// own insert logic — no $defaultFn needed here.
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -62,6 +64,8 @@ export const verification = pgTable("verification", {
 });
 
 // ── Custom Application Tables ──────────────────────────────────────────
+// These tables need an explicit default ID generator since our own API
+// routes handle inserts directly, not through Better Auth's internal logic.
 
 export const reactionTypeEnum = pgEnum("reaction_type", [
   "like",
@@ -71,7 +75,9 @@ export const reactionTypeEnum = pgEnum("reaction_type", [
 ]);
 
 export const comments = pgTable("comments", {
-  id: text("id").primaryKey(),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
@@ -85,7 +91,9 @@ export const comments = pgTable("comments", {
 });
 
 export const watchlist = pgTable("watchlist", {
-  id: text("id").primaryKey(),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
@@ -96,7 +104,9 @@ export const watchlist = pgTable("watchlist", {
 export const reactions = pgTable(
   "reactions",
   {
-    id: text("id").primaryKey(),
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),

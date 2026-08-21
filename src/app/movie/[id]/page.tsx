@@ -264,7 +264,7 @@ export default function MovieDetailPage() {
     : "Information not available";
 
   return (
-    <main className="w-full max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-0 py-6 pb-16 flex flex-col gap-8 text-white">
+    <main className="w-full max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-0 pb-16 flex flex-col gap-8 text-white">
 
       {/* 1. HERO BANNER (Frame 43 / detail) */}
       <section
@@ -324,8 +324,8 @@ export default function MovieDetailPage() {
           </h1>
 
           {/* Subtitle / Callout Text */}
-          <p className="text-white font-semibold text-[16px] sm:text-[18px] lg:text-[20px] leading-snug uppercase max-w-[568px]">
-            ADD TO WATCHLIST AND JOIN THE DISCUSSION BOX FOR THIS {movie.type === "movie" ? "MOVIE" : "SERIES"}.
+          <p className="text-white font-semibold text-[16px] sm:text-[18px] lg:text-[20px] leading-snug max-w-[568px]">
+            Add To Watchlist and join the discus box for this {movie.type === "movie" ? "movie" : "series"}.
           </p>
 
           {/* Action Buttons Row (button) */}
@@ -336,23 +336,18 @@ export default function MovieDetailPage() {
               onClick={() => setInWatchlist(!inWatchlist)}
               className="bg-[#E60813] hover:bg-[#d00711] text-white rounded-[40px] px-6 py-3.5 h-[56px] min-w-[200px] sm:min-w-[210px] font-bold text-[18px] flex items-center justify-center gap-2.5 cursor-pointer transition-colors duration-150"
             >
-              {inWatchlist ? (
-                <>
-                  <Check size={20} className="text-white" />
-                  <span className="text-white">In Watchlist</span>
-                </>
-              ) : (
-                <>
-                  <Plus size={20} className="text-white" />
-                  <span className="text-white">Add to Watchlist</span>
-                </>
-              )}
+              <img
+                src="/icons/play.png"
+                alt=""
+                className="w-5 h-5 object-contain shrink-0"
+              />
+              <span className="text-white">{inWatchlist ? "In Watchlist" : "Add to Watchlist"}</span>
             </button>
 
             {/* Join Community Button */}
             <Link
               href="#discussion"
-              className="border-2 border-white hover:bg-white/10 text-white rounded-[40px] px-6 py-3.5 h-[56px] min-w-[190px] sm:min-w-[208px] font-bold text-[18px] flex items-center justify-center gap-2.5 no-underline transition-colors duration-150"
+              className="border-2 border-white hover:bg-white/10 text-white rounded-[40px] px-6 py-3.5 h-[56px] min-w-[190px] sm:min-w-[208px] font-Inter-bold text-[18px] flex items-center justify-center gap-2.5 no-underline transition-colors duration-150"
             >
               <Plus size={20} className="text-white" />
               <span className="text-white">Join Community</span>
@@ -1008,63 +1003,63 @@ export default function MovieDetailPage() {
                       ? Number(itemScoreRaw).toFixed(1)
                       : "N/A";
 
-                return (
-                  <Link
-                    key={item.id}
-                    href={`/movie/${item.id}`}
-                    className="flex items-center gap-5 p-1 rounded-md hover:bg-[#3D3D3D]/50 transition-colors group no-underline"
-                  >
-                    {/* Thumbnail (Rectangle 34624242) */}
-                    <div className="relative w-[80px] h-[80px] rounded-[6px] overflow-hidden shrink-0 bg-[#282828] border border-[#535353]">
-                      <Image
-                        src={itemPoster}
-                        alt={item.title}
-                        fill
-                        unoptimized
-                        className="object-cover"
-                      />
-                    </div>
+                  return (
+                    <Link
+                      key={item.id}
+                      href={`/movie/${item.id}`}
+                      className="flex items-center gap-5 p-1 rounded-md hover:bg-[#3D3D3D]/50 transition-colors group no-underline"
+                    >
+                      {/* Thumbnail (Rectangle 34624242) */}
+                      <div className="relative w-[80px] h-[80px] rounded-[6px] overflow-hidden shrink-0 bg-[#282828] border border-[#535353]">
+                        <Image
+                          src={itemPoster}
+                          alt={item.title}
+                          fill
+                          unoptimized
+                          className="object-cover"
+                        />
+                      </div>
 
-                    {/* Middle Info (Frame 64) */}
-                    <div className="flex-1 min-w-0 flex flex-col justify-center gap-1.5">
-                      <h3 className="font-medium text-[14px] text-white capitalize truncate group-hover:text-[#E60813] transition-colors leading-tight">
-                        {item.title}
-                      </h3>
+                      {/* Middle Info (Frame 64) */}
+                      <div className="flex-1 min-w-0 flex flex-col justify-center gap-1.5">
+                        <h3 className="font-medium text-[14px] text-white capitalize truncate group-hover:text-[#E60813] transition-colors leading-tight">
+                          {item.title}
+                        </h3>
 
-                      {/* Detail row */}
-                      <div className="flex items-center justify-between text-[12px] text-white">
-                        <div className="flex items-center gap-1.5">
-                          <span>{item.year || "2025"}</span>
-                          <span className="w-1 h-1 rounded-full bg-[#D9D9D9] inline-block" />
-                          <span className="capitalize">
-                            {item.genre_names?.[0] || item.category || "Drama"}
-                          </span>
-                          <span className="w-1 h-1 rounded-full bg-[#D9D9D9] inline-block" />
-                          <span>
-                            {item.type === "movie" ? "Movie" : "1 Season"}
-                          </span>
-                        </div>
+                        {/* Detail row */}
+                        <div className="flex items-center justify-between text-[12px] text-white">
+                          <div className="flex items-center gap-1.5">
+                            <span>{item.year || "2025"}</span>
+                            <span className="w-1 h-1 rounded-full bg-[#D9D9D9] inline-block" />
+                            <span className="capitalize">
+                              {item.genre_names?.[0] || item.category || "Drama"}
+                            </span>
+                            <span className="w-1 h-1 rounded-full bg-[#D9D9D9] inline-block" />
+                            <span>
+                              {item.type === "movie" ? "Movie" : "1 Season"}
+                            </span>
+                          </div>
 
-                        {/* Rating (Frame 20) */}
-                        <div className="flex items-center gap-1 shrink-0">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src="/icons/Vector.png"
-                            alt="Star"
-                            className="w-2.5 h-2.5 object-contain"
-                            onError={(e) => {
-                              e.currentTarget.style.display = "none";
-                            }}
-                          />
-                          <span className="text-[12px] font-normal text-white">
-                            {itemScore}
-                          </span>
+                          {/* Rating (Frame 20) */}
+                          <div className="flex items-center gap-1 shrink-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src="/icons/Vector.png"
+                              alt="Star"
+                              className="w-2.5 h-2.5 object-contain"
+                              onError={(e) => {
+                                e.currentTarget.style.display = "none";
+                              }}
+                            />
+                            <span className="text-[12px] font-normal text-white">
+                              {itemScore}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </Link>
-                );
-              }))}
+                    </Link>
+                  );
+                }))}
             </div>
           </section>
 

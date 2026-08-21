@@ -70,7 +70,7 @@ function SearchContent() {
   ];
 
   return (
-    <main className="w-full max-w-[1400px] mx-auto space-y-8 py-6 px-4 sm:px-6 lg:px-8">
+    <main className="w-full max-w-[1400px] mx-auto space-y-8 pb-6 px-4 sm:px-6 lg:px-8">
       <div className="space-y-4">
         <h1 className="font-heading text-3xl text-white flex items-center gap-3">
           <SearchIcon className="text-brand-red" size={28} />
@@ -101,8 +101,8 @@ function SearchContent() {
                 key={g}
                 onClick={() => setSelectedGenre(g)}
                 className={`px-3 py-1 rounded-full font-mono text-xs border transition-colors ${selectedGenre === g
-                    ? "bg-brand-red text-white border-brand-red"
-                    : "bg-white/5 border-white/10 text-gray hover:text-white"
+                  ? "bg-brand-red text-white border-brand-red"
+                  : "bg-white/5 border-white/10 text-gray hover:text-white"
                   }`}
               >
                 {g.toUpperCase()}

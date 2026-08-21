@@ -122,7 +122,7 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="w-full min-h-screen pb-12 overflow-x-hidden bg-[#181818]">
+    <main className="w-full min-h-screen pb-12 overflow-x-hidden space-y-8 bg-[#181818]">
       {/* Hero Banner (Featured Item) */}
       <div className="mb-12">
         <HeroBanner type="all" />
