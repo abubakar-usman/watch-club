@@ -7,7 +7,7 @@ import { Clapperboard, Users } from "lucide-react";
 export default function WatchNextBanner() {
   return (
     <section className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="w-full min-h-[173px] bg-[#1F1F1F] rounded-[10px] py-[41px] px-[44px] flex items-center justify-between gap-[77px] max-[900px]:flex-col max-[900px]:items-stretch max-[900px]:gap-6 max-[900px]:px-6 max-[900px]:py-6">
+      <div className="w-full min-h-[173px] bg-[#282828] border border-[#535353] rounded-[10px] py-[41px] px-[44px] flex items-center justify-between gap-[77px] max-[900px]:flex-col max-[900px]:items-stretch max-[900px]:gap-6 max-[900px]:px-6 max-[900px]:py-6">
 
         {/* Content */}
         <div className="flex-1 min-w-0">

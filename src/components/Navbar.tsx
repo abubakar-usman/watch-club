@@ -4,15 +4,18 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Search, Bell, ChevronDown, X } from "lucide-react";
+import { Search, Bell, ChevronDown, X, Film, User } from "lucide-react";
 
 export default function Navbar() {
   const activePath = usePathname();
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isGenreOpen, setIsGenreOpen] = useState(false);
+  const [isUserOpen, setIsUserOpen] = useState(false);
+
   const searchRef = useRef<HTMLDivElement>(null);
   const genreRef = useRef<HTMLDivElement>(null);
+  const userRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -21,6 +24,9 @@ export default function Navbar() {
       }
       if (genreRef.current && !genreRef.current.contains(event.target as Node)) {
         setIsGenreOpen(false);
+      }
+      if (userRef.current && !userRef.current.contains(event.target as Node)) {
+        setIsUserOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -50,6 +56,20 @@ export default function Navbar() {
     { name: "Sci-Fi", href: "/genre/sci-fi" },
     { name: "Thriller", href: "/genre/thriller" },
     { name: "Western", href: "/genre/western" },
+  ];
+
+  // User dropdown menu items
+  const userMenuItems = [
+    {
+      label: "Profile",
+      href: "/portal",
+      icon: <User size={15} />,
+    },
+    {
+      label: "Watchlist",
+      href: "/watchlist",
+      icon: <Film size={15} />,
+    },
   ];
 
   return (
@@ -99,14 +119,23 @@ export default function Navbar() {
           {/* GENRE BUTTON & DROPDOWN */}
           <div ref={genreRef} className="relative">
             <button
+              id="genre-dropdown-btn"
               onClick={() => setIsGenreOpen(!isGenreOpen)}
-              className="flex items-center gap-1.5 border border-white/20 bg-transparent hover:bg-white/5 text-white text-[14px] px-4 py-1.5 rounded-full transition-all focus:outline-none"
+              className={`flex items-center gap-1.5 bg-transparent text-white text-[14px] px-4 py-1.5 rounded-[10px] transition-all duration-200 focus:outline-none border ${
+                isGenreOpen
+                  ? "border-white/50 bg-white/5"
+                  : "border-white/30 hover:border-white/50 hover:bg-white/5"
+              }`}
             >
-              Genre <ChevronDown size={14} className={isGenreOpen ? "rotate-180 transition-transform duration-200" : "transition-transform duration-200"} />
+              Genre{" "}
+              <ChevronDown
+                size={14}
+                className={`transition-transform duration-200 ${isGenreOpen ? "rotate-180" : ""}`}
+              />
             </button>
 
             {isGenreOpen && (
-              <div className="absolute top-full right-0 mt-3 w-[340px] bg-[#262626] border border-white/10 rounded-2xl p-6 shadow-2xl z-50">
+              <div className="absolute top-full right-0 mt-3 w-[340px] bg-[#1A1A1A] border border-white/15 rounded-2xl p-6 shadow-2xl z-50">
                 <div className="grid grid-cols-2 gap-x-8 gap-y-4">
                   {genres.map((genre) => (
                     <Link
@@ -126,35 +155,98 @@ export default function Navbar() {
           {/* SEARCH BAR */}
           <div ref={searchRef} className="relative flex items-center">
             <div className={`flex items-center transition-all duration-300 rounded-full ${isSearchExpanded ? "bg-[#1A1A1A] px-3 py-1.5 w-[200px]" : "w-auto"}`}>
-              <button onClick={() => setIsSearchExpanded(true)} className="text-white focus:outline-none">
+              <button
+                id="search-toggle-btn"
+                onClick={() => setIsSearchExpanded(true)}
+                className="text-white focus:outline-none"
+              >
                 <Search size={22} strokeWidth={2} />
               </button>
               {isSearchExpanded && (
-                <input
-                  autoFocus
-                  className="bg-transparent border-none outline-none text-white text-sm ml-2 w-full"
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
+                <>
+                  <input
+                    autoFocus
+                    className="bg-transparent border-none outline-none text-white text-sm ml-2 w-full"
+                    placeholder="Search..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => { setSearchQuery(""); setIsSearchExpanded(false); }}
+                      className="text-white/50 hover:text-white ml-1"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </>
               )}
             </div>
           </div>
 
-          {/* NOTIFICATION */}
-          <button className="text-white hover:opacity-80 focus:outline-none">
+          {/* NOTIFICATION BELL — links to /notifications */}
+          <Link
+            href="/notifications"
+            id="notifications-link"
+            className="relative text-white hover:opacity-80 focus:outline-none transition-opacity"
+            title="Notifications"
+          >
             <Bell size={22} strokeWidth={2} />
-          </button>
+            {/* Unread badge */}
+            <span className="absolute -top-1 -right-1 w-[9px] h-[9px] rounded-full bg-[#E60813] border border-black" />
+          </Link>
 
-          {/* USER AVATAR */}
-          <div className="w-[40px] h-[40px] rounded-[12px] overflow-hidden cursor-pointer border border-white/10 hover:scale-105 transition-transform">
-            <Image
-              src="/popcorn.png"
-              alt="User"
-              width={40}
-              height={40}
-              className="object-cover"
-            />
+          {/* USER AVATAR + DROPDOWN CHEVRON */}
+          <div ref={userRef} className="relative flex items-center gap-1.5">
+            {/* Avatar */}
+            <div
+              className="w-[40px] h-[40px] rounded-[12px] overflow-hidden cursor-pointer border border-white/15 hover:border-white/40 transition-colors"
+              onClick={() => setIsUserOpen((v) => !v)}
+            >
+              <Image
+                src="/popcorn.png"
+                alt="User"
+                width={40}
+                height={40}
+                className="object-cover"
+              />
+            </div>
+
+            {/* Chevron next to avatar */}
+            <button
+              id="user-menu-chevron"
+              onClick={() => setIsUserOpen((v) => !v)}
+              className="text-white/70 hover:text-white transition-colors focus:outline-none p-0.5"
+              aria-label="Open user menu"
+            >
+              <ChevronDown
+                size={15}
+                className={`transition-transform duration-200 ${isUserOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {/* User Dropdown */}
+            {isUserOpen && (
+              <div
+                className="absolute top-full right-0 mt-3 w-[180px] rounded-2xl border border-white/12 shadow-2xl overflow-hidden z-50"
+                style={{ background: "#1A1A1A" }}
+              >
+                {userMenuItems.map((item, idx) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    id={`user-menu-${item.label.toLowerCase()}`}
+                    onClick={() => setIsUserOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3.5 text-[14px] font-medium text-[#C7C7C7] hover:text-white hover:bg-white/5 transition-all ${
+                      idx !== userMenuItems.length - 1 ? "border-b border-white/8" : ""
+                    }`}
+                  >
+                    <span className="text-[#E60813]">{item.icon}</span>
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

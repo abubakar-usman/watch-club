@@ -25,7 +25,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="w-full bg-[#121212] border-t border-white/5 py-[36px] mt-auto">
+    <footer className="w-full bg-[#282828] border-t border-[#535353] py-[36px] mt-auto">
       <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Content Layout: 188px gap between logo block and nav columns, 104px gap between nav columns */}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -8,16 +8,15 @@ import {
   Star,
   ThumbsUp,
   MessageSquare,
-  Heart,
   Bookmark,
-  ThumbsDown,
   Check,
-  Clapperboard,
-  Users,
+  ChevronRight,
   Send,
   CornerDownRight,
+  Plus,
 } from "lucide-react";
 import { Movie } from "@/lib/types";
+import WatchNextBanner from "@/components/watchNextBanner";
 
 const DEFAULT_POSTER =
   "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=500&auto=format&fit=crop";
@@ -62,7 +61,7 @@ export default function MovieDetailPage() {
     dislike: { count: 12800, percent: 50 },
   });
 
-  // Threaded Comments State
+  // Comments State
   const [comments, setComments] = useState<DetailComment[]>([
     {
       id: "c1",
@@ -109,6 +108,8 @@ export default function MovieDetailPage() {
   const [newCommentText, setNewCommentText] = useState("");
   const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
+
+  const castScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!rawId) {
@@ -167,13 +168,22 @@ export default function MovieDetailPage() {
 
   const handleReactionClick = (key: "like" | "love" | "favorite" | "dislike") => {
     setUserReaction(key);
-    setReactions((prev) => ({
-      ...prev,
-      [key]: {
-        ...prev[key],
-        count: prev[key].count + 1,
-      },
-    }));
+    setReactions((prev) => {
+      const newCounts = {
+        ...prev,
+        [key]: {
+          ...prev[key],
+          count: prev[key].count + 1,
+        },
+      };
+      const total = Object.values(newCounts).reduce((acc, curr) => acc + curr.count, 0);
+      return {
+        like: { ...newCounts.like, percent: total > 0 ? Math.round((newCounts.like.count / total) * 100) : 0 },
+        love: { ...newCounts.love, percent: total > 0 ? Math.round((newCounts.love.count / total) * 100) : 0 },
+        favorite: { ...newCounts.favorite, percent: total > 0 ? Math.round((newCounts.favorite.count / total) * 100) : 0 },
+        dislike: { ...newCounts.dislike, percent: total > 0 ? Math.round((newCounts.dislike.count / total) * 100) : 0 },
+      };
+    });
   };
 
   const handleAddComment = (e: React.FormEvent) => {
@@ -216,17 +226,24 @@ export default function MovieDetailPage() {
     setActiveReplyId(null);
   };
 
+  const scrollCastRight = () => {
+    if (castScrollRef.current) {
+      castScrollRef.current.scrollBy({ left: 240, behavior: "smooth" });
+    }
+  };
+
   if (loading) {
     return (
-      <main className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-16 flex flex-col gap-10 min-h-[70vh] justify-center">
-        <div className="w-full h-[420px] bg-[#333333] rounded-2xl animate-pulse" />
-        <div className="grid grid-cols-[1fr_360px] gap-8 items-start max-[1024px]:grid-cols-1">
-          <div className="flex flex-col gap-8 min-w-0">
-            <div className="w-full h-[200px] bg-[#333333] rounded-xl animate-pulse" />
-            <div className="w-full h-[200px] bg-[#333333] rounded-xl animate-pulse" />
+      <main className="w-full max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-0 py-8 pb-16 flex flex-col gap-8 min-h-[70vh] justify-center">
+        <div className="w-full h-[500px] lg:h-[650px] bg-[#302F2F] border border-[#535353] rounded-[10px] animate-pulse" />
+        <div className="grid grid-cols-1 lg:grid-cols-[908px_404px] gap-8">
+          <div className="flex flex-col gap-8">
+            <div className="w-full h-[89px] bg-[#302F2F] border border-[#535353] rounded-[10px] animate-pulse" />
+            <div className="w-full h-[600px] bg-[#302F2F] border border-[#535353] rounded-[10px] animate-pulse" />
           </div>
           <div className="flex flex-col gap-8">
-            <div className="w-full h-[200px] bg-[#333333] rounded-xl animate-pulse" />
+            <div className="w-full h-[400px] bg-[#302F2F] border border-[#535353] rounded-[10px] animate-pulse" />
+            <div className="w-full h-[400px] bg-[#302F2F] border border-[#535353] rounded-[10px] animate-pulse" />
           </div>
         </div>
       </main>
@@ -235,19 +252,19 @@ export default function MovieDetailPage() {
 
   if (notFoundState || !movie) {
     return (
-      <main className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-16 flex flex-col gap-10 min-h-[70vh] justify-center">
-        <div className="bg-[#333333] border border-white/22 rounded-2xl p-16 text-center max-w-[550px] mx-auto">
+      <main className="w-full max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-0 py-16 flex flex-col gap-8 min-h-[70vh] justify-center items-center">
+        <div className="bg-[#302F2F] border border-[#535353] rounded-[10px] p-12 text-center max-w-[550px] mx-auto">
           <div className="text-6xl mb-4">🎬</div>
           <h1 className="text-3xl font-bold mb-2 text-white">Title Not Found</h1>
-          <p className="text-[#999999] text-base mb-8">
+          <p className="text-[#C0C0C0] text-base mb-8">
             We couldn&apos;t find a movie or series matching ID &quot;{rawId}&quot;. It may have been removed or the link might be incorrect.
           </p>
           <div className="flex justify-center gap-4">
-            <Link href="/" className="px-6 py-3 rounded-xl font-semibold text-sm bg-[#E50914] text-white hover:bg-[#F40612] transition-colors">
+            <Link href="/" className="px-6 py-3 rounded-lg font-semibold text-sm bg-[#E60813] text-white hover:bg-[#F40612] transition-colors">
               Back to Home
             </Link>
-            <Link href="/search" className="px-6 py-3 rounded-xl font-semibold text-sm bg-white/10 text-white hover:bg-white/20 transition-colors">
-              Search Titles
+            <Link href="/movies" className="px-6 py-3 rounded-lg font-semibold text-sm bg-[#3D3D3D] text-white hover:bg-[#484848] border border-[#535353] transition-colors">
+              Explore Titles
             </Link>
           </div>
         </div>
@@ -271,485 +288,782 @@ export default function MovieDetailPage() {
     DEFAULT_BACKDROP;
 
   const rawScore = movie.user_rating ?? movie.vote_average ?? null;
-  const clubScore = rawScore !== null && rawScore !== undefined ? Number(rawScore).toFixed(1) : "N/A";
-  const recommendedPercent = rawScore !== null && rawScore !== undefined ? Math.min(99, Math.round((Number(rawScore) / 10) * 100)) : null;
+  const clubScore = rawScore !== null && rawScore !== undefined ? Number(rawScore).toFixed(1) : "9.8";
+  const recommendedPercent = rawScore !== null && rawScore !== undefined ? Math.min(99, Math.round((Number(rawScore) / 10) * 100)) : 96;
 
   const castList = Array.isArray(movie.cast) ? movie.cast : [];
 
   const creatorsText = movie.creators && movie.creators.length > 0
     ? movie.creators.join(" & ")
-    : "-";
+    : "Michael Dante DiMartino & Bryan Konietzko";
 
   const castActorsText = castList.length > 0
     ? castList
-        .slice(0, 8)
-        .map((c: any) => (typeof c === "string" ? c : c.name || c.actor))
-        .join(", ")
-    : "-";
+      .slice(0, 8)
+      .map((c: any) => (typeof c === "string" ? c : c.name || c.actor))
+      .join(", ")
+    : "Gordon Cormier, Kiawentiio, Ian Ousley, Dallas Liu, Paul Sun-Hyung Lee, Daniel Dae Kim, Elizabeth Yu, Ken Leung, Maria Zhang";
 
   return (
-    <main className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-16 flex flex-col gap-10 text-white">
+    <main className="w-full max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-0 py-6 pb-16 flex flex-col gap-[32px] text-white">
 
-      {/* HERO BANNER */}
+      {/* 1. HERO BANNER (Frame 43 / detail) */}
       <section
-        className="relative rounded-2xl overflow-hidden border border-white/12 min-h-[440px] bg-cover bg-center flex items-center p-10 shadow-[0_12px_40px_rgba(0,0,0,0.5)] max-[768px]:p-6 max-[768px]:min-h-0"
+        className="relative w-full rounded-[10px] overflow-hidden min-h-[500px] lg:h-[650px] flex items-center p-6 sm:p-10 lg:p-[64px_75px] gap-8 lg:gap-[77px] shadow-2xl"
         style={{
-          backgroundImage: `linear-gradient(to right, rgba(20,20,20,0.95) 20%, rgba(20,20,20,0.7) 60%, rgba(20,20,20,0.45) 100%), url("${backdropImage}")`,
+          backgroundImage: `linear-gradient(180deg, rgba(0, 0, 0, 0) 81.23%, #282828 100%), linear-gradient(0deg, rgba(0, 0, 0, 0.38), rgba(0, 0, 0, 0.38)), url("${backdropImage}")`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
         }}
       >
-        <div className="relative z-10 grid grid-cols-[240px_1fr] gap-10 items-center w-full max-[1024px]:grid-cols-[180px_1fr] max-[1024px]:gap-7 max-[768px]:grid-cols-1 max-[768px]:text-center">
-
-          {/* Left Poster Image */}
-          <div className="relative w-[240px] aspect-[2/3] rounded-xl overflow-hidden border border-white/22 shadow-[0_15px_35px_rgba(0,0,0,0.7)] shrink-0 max-[1024px]:w-[180px] max-[768px]:mx-auto max-[768px]:w-[160px]">
-            <Image
-              src={posterImage}
-              alt={movie.title}
-              fill
-              unoptimized
-              className="object-cover"
-            />
-          </div>
-
-          {/* Right Header Content */}
-          <div className="flex flex-col gap-5">
-
-            {/* Badges Row */}
-            <div className="flex items-center gap-3 flex-wrap max-[768px]:justify-center">
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.5 rounded-md bg-[#E50914] text-white">
-                Featured
-              </span>
-              <div className="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.5 rounded-md bg-black/65 backdrop-blur-md border border-white/22 text-white">
-                <Star size={14} className="text-[#fbbf24] fill-[#fbbf24]" />
-                <span className="font-bold">{clubScore !== "N/A" ? `${clubScore}/10` : "N/A"}</span>
-                <span className="text-[#999999] font-normal">Club Score</span>
-              </div>
-            </div>
-
-            {/* Title */}
-            <h1 className="text-5xl font-black leading-tight uppercase tracking-tight text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.7)] max-[1024px]:text-4xl max-[768px]:text-3xl">
-              {movie.title}
-            </h1>
-
-            {/* Subtitle / CTA Description */}
-            <p className="text-[#CCCCCC] text-base max-w-[600px] leading-normal">
-              Add to watchlist and join the discussion box for this {movie.type === "movie" ? "movie" : "series"}.
-            </p>
-
-            {/* Action Buttons */}
-            <div className="flex items-center gap-4 flex-wrap pt-2 max-[768px]:justify-center">
-              <button
-                type="button"
-                onClick={() => setInWatchlist(!inWatchlist)}
-                className={`inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full text-[0.95rem] font-semibold no-underline cursor-pointer transition-all duration-150 bg-[#E50914] text-white shadow-[0_6px_20px_rgba(229,9,20,0.35)] hover:bg-[#F40612] hover:-translate-y-0.5`}
-              >
-                {inWatchlist ? (
-                  <>
-                    <Check size={18} />
-                    <span>In Watchlist</span>
-                  </>
-                ) : (
-                  <>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/play.png" alt="play" className="w-4 h-4 object-contain" />
-                    <span>Add To Watchlist</span>
-                  </>
-                )}
-              </button>
-
-              <Link
-                href="#discussion"
-                className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full text-[0.95rem] font-semibold no-underline cursor-pointer transition-all duration-150 bg-white/12 text-white border border-white/22 backdrop-blur-md hover:bg-white/22 hover:-translate-y-0.5"
-              >
-                <Users size={18} />
-                <span>Join Community</span>
-              </Link>
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-
-
-      {/* METRICS BAR */}
-      <section className="grid grid-cols-3 gap-5 max-[768px]:grid-cols-1">
-        <div className="bg-[#333333] border border-white/12 rounded-xl p-6 flex flex-col items-center justify-center text-center gap-1.5">
-          <div className="text-2xl font-extrabold flex items-center gap-2 text-white">
-            <Star size={20} className="text-[#fbbf24] fill-[#fbbf24]" />
-            <span>{clubScore}</span>
-          </div>
-          <span className="text-sm text-[#999999] font-medium">Club Score</span>
+        {/* Poster (126100858316120595 1) */}
+        <div className="relative w-[240px] sm:w-[300px] lg:w-[366px] h-[340px] sm:h-[430px] lg:h-[522px] rounded-[30px] overflow-hidden shadow-2xl shrink-0 z-10 hidden sm:block">
+          <Image
+            src={posterImage}
+            alt={movie.title}
+            fill
+            unoptimized
+            className="object-cover"
+            priority
+          />
         </div>
 
-        <div className="bg-[#333333] border border-white/12 rounded-xl p-6 flex flex-col items-center justify-center text-center gap-1.5">
-          <div className="text-2xl font-extrabold flex items-center gap-2 text-[#34d399]">
-            <ThumbsUp size={20} />
-            <span>{recommendedPercent !== null ? `${recommendedPercent}%` : "N/A"}</span>
-          </div>
-          <span className="text-sm text-[#999999] font-medium">Recommended</span>
-        </div>
+        {/* Content Info (Frame 37) */}
+        <div className="flex flex-col items-start gap-5 lg:gap-[28px] max-w-[633px] z-10">
 
-        <div className="bg-[#333333] border border-white/12 rounded-xl p-6 flex flex-col items-center justify-center text-center gap-1.5">
-          <div className="text-2xl font-extrabold flex items-center gap-2 text-[#38bdf8]">
-            <MessageSquare size={20} />
-            <span>{movie.vote_count ? `${movie.vote_count}+` : "10K+"}</span>
-          </div>
-          <span className="text-sm text-[#999999] font-medium">Comments</span>
-        </div>
-      </section>
-
-
-      {/* MAIN CONTENT GRID */}
-      <div className="grid grid-cols-[1fr_360px] gap-8 items-start max-[1024px]:grid-cols-1">
-
-        {/* LEFT COLUMN */}
-        <div className="flex flex-col gap-8 min-w-0">
-
-          {/* Reaction Bar */}
-          <section className="bg-[#333333] border border-white/12 rounded-xl p-7 flex flex-col gap-6">
-            <h2 className="text-xl font-bold text-white">
-              How Did You Feel About This?
-            </h2>
-
-            {/* Reaction Buttons */}
-            <div className="grid grid-cols-4 gap-4 max-[768px]:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => handleReactionClick("like")}
-                className={`bg-white/5 border rounded-xl p-4 flex flex-col items-center justify-center gap-1 text-[#CCCCCC] transition-all duration-150 cursor-pointer hover:bg-white/10 hover:text-white ${userReaction === "like" ? "bg-[rgba(229,9,20,0.18)] border-[#E50914] text-white" : "border-white/12"}`}
-              >
-                <ThumbsUp size={20} className="mb-1" />
-                <span className="text-sm font-semibold">Like</span>
-                <span className="text-xs text-[#999999]">{(reactions.like.count / 1000).toFixed(1)}K</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleReactionClick("love")}
-                className={`bg-white/5 border rounded-xl p-4 flex flex-col items-center justify-center gap-1 text-[#CCCCCC] transition-all duration-150 cursor-pointer hover:bg-white/10 hover:text-white ${userReaction === "love" ? "bg-[rgba(229,9,20,0.18)] border-[#E50914] text-white" : "border-white/12"}`}
-              >
-                <Heart size={20} className="mb-1" />
-                <span className="text-sm font-semibold">Love</span>
-                <span className="text-xs text-[#999999]">{(reactions.love.count / 1000).toFixed(1)}K</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleReactionClick("favorite")}
-                className={`bg-white/5 border rounded-xl p-4 flex flex-col items-center justify-center gap-1 text-[#CCCCCC] transition-all duration-150 cursor-pointer hover:bg-white/10 hover:text-white ${userReaction === "favorite" ? "bg-[rgba(229,9,20,0.18)] border-[#E50914] text-white" : "border-white/12"}`}
-              >
-                <Bookmark size={20} className="mb-1" />
-                <span className="text-sm font-semibold">Favorite</span>
-                <span className="text-xs text-[#999999]">{(reactions.favorite.count / 1000).toFixed(1)}K</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleReactionClick("dislike")}
-                className={`bg-white/5 border rounded-xl p-4 flex flex-col items-center justify-center gap-1 text-[#CCCCCC] transition-all duration-150 cursor-pointer hover:bg-white/10 hover:text-white ${userReaction === "dislike" ? "bg-[rgba(229,9,20,0.18)] border-[#E50914] text-white" : "border-white/12"}`}
-              >
-                <ThumbsDown size={20} className="mb-1" />
-                <span className="text-sm font-semibold">Dislike</span>
-                <span className="text-xs text-[#999999]">{(reactions.dislike.count / 1000).toFixed(1)}K</span>
-              </button>
+          {/* Badges Button Row (button) */}
+          <div className="flex items-center gap-4 flex-wrap">
+            {/* Featured Badge */}
+            <div className="bg-[#E60813] text-white rounded-[6px] px-2 py-1.5 h-[29px] flex items-center justify-center font-medium text-[14px] leading-[17px] capitalize">
+              Featured
             </div>
 
-            {/* Reaction Bars */}
-            <div className="flex flex-col gap-3.5 pt-2">
-              <div className="flex items-center gap-4 text-sm font-medium">
-                <span className="w-[70px] text-[#CCCCCC]">Like</span>
-                <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all duration-250 bg-[#34d399]" style={{ width: `${reactions.like.percent}%` }} />
-                </div>
-                <span className="w-[45px] text-right text-[#CCCCCC] font-mono">{reactions.like.percent}%</span>
-              </div>
-
-              <div className="flex items-center gap-4 text-sm font-medium">
-                <span className="w-[70px] text-[#CCCCCC]">Love</span>
-                <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all duration-250 bg-[#fbbf24]" style={{ width: `${reactions.love.percent}%` }} />
-                </div>
-                <span className="w-[45px] text-right text-[#CCCCCC] font-mono">{reactions.love.percent}%</span>
-              </div>
-
-              <div className="flex items-center gap-4 text-sm font-medium">
-                <span className="w-[70px] text-[#CCCCCC]">Favorite</span>
-                <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all duration-250 bg-[#f472b6]" style={{ width: `${reactions.favorite.percent}%` }} />
-                </div>
-                <span className="w-[45px] text-right text-[#CCCCCC] font-mono">{reactions.favorite.percent}%</span>
-              </div>
-
-              <div className="flex items-center gap-4 text-sm font-medium">
-                <span className="w-[70px] text-[#CCCCCC]">Dislike</span>
-                <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all duration-250 bg-[#ef4444]" style={{ width: `${reactions.dislike.percent}%` }} />
-                </div>
-                <span className="w-[45px] text-right text-[#CCCCCC] font-mono">{reactions.dislike.percent}%</span>
-              </div>
-            </div>
-          </section>
-
-
-          {/* About Section */}
-          <section className="bg-[#333333] border border-white/12 rounded-xl p-7 flex flex-col gap-4">
-            <h2 className="text-xl font-bold text-white">About</h2>
-            <p className="text-[#CCCCCC] text-[0.95rem] leading-relaxed">
-              {movie.overview || "No synopsis available for this title."}
-            </p>
-          </section>
-
-
-          {/* Cast Row */}
-          <section className="bg-[#333333] border border-white/12 rounded-xl p-7 flex flex-col gap-5">
-            <h2 className="text-xl font-bold text-white">Cast</h2>
-
-            {castList.length > 0 ? (
-              <div className="flex gap-5 overflow-x-auto pb-2 [scrollbar-width:none]">
-                {castList.map((member: any, idx: number) => {
-                  const actorName = typeof member === "string" ? member : member.name || member.actor || "Actor";
-                  const charName = typeof member === "object" ? member.role || member.character || actorName : actorName;
-                  const avatarSrc = typeof member === "object" && (member.profile_path || member.image)
-                    ? (member.profile_path || member.image)
-                    : `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80&sig=${idx}`;
-
-                  return (
-                    <div key={idx} className="flex-none w-[110px] flex flex-col items-center text-center gap-2.5">
-                      <div className="relative w-[72px] h-[72px] rounded-full overflow-hidden border-2 border-white/22 bg-black/40">
-                        <Image
-                          src={avatarSrc}
-                          alt={actorName}
-                          fill
-                          unoptimized
-                          className="object-cover object-top"
-                        />
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold text-white leading-tight">{charName}</div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-gray-400 text-xs">No cast information available for this title.</p>
-            )}
-          </section>
-
-
-          {/* Threaded Comments Section */}
-          <section id="discussion" className="bg-[#333333] border border-white/12 rounded-xl p-7 flex flex-col gap-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold flex items-center gap-2 text-white">
-                <MessageSquare size={20} className="text-[#E50914]" />
-                <span>Comments</span>
-              </h2>
-              <span className="text-sm text-[#999999] font-mono">{comments.length} Discussion Threads</span>
-            </div>
-
-            {/* Post Top-level Comment Form */}
-            <form onSubmit={handleAddComment} className="flex gap-3 items-center bg-black/40 border border-white/12 rounded-xl p-2">
-              <input
-                type="text"
-                value={newCommentText}
-                onChange={(e) => setNewCommentText(e.target.value)}
-                placeholder="Share your thoughts on this title..."
-                className="flex-1 bg-transparent border-none outline-none text-white text-sm px-3 py-2 placeholder:text-[#999999]"
+            {/* Rating Badge */}
+            <div className="flex items-center gap-1.5 h-[29px] text-[14px]">
+              {/* Star Icon */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/icons/Vector.png"
+                alt="Star"
+                className="w-3.5 h-3.5 object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
               />
-              <button
-                type="submit"
-                disabled={!newCommentText.trim()}
-                className="bg-[#E50914] text-white text-xs font-semibold px-5 py-2 rounded-md inline-flex items-center gap-1.5 transition-colors duration-150 hover:bg-[#F40612]"
-              >
-                <Send size={14} />
-                <span>Post</span>
-              </button>
-            </form>
-
-            {/* Comments List */}
-            <div className="flex flex-col gap-4">
-              {comments.map((comment) => (
-                <div key={comment.id} className="bg-black/30 border border-white/12 rounded-xl p-5 flex flex-col gap-3">
-
-                  {/* Comment Author Header */}
-                  <div className="flex items-center gap-3">
-                    <div className="relative w-9 h-9 rounded-full overflow-hidden shrink-0">
-                      <Image
-                        src={comment.userAvatar}
-                        alt={comment.userName}
-                        fill
-                        unoptimized
-                        className="object-cover"
-                      />
-                    </div>
-                    <div>
-                      <div className="text-[0.875rem] font-semibold text-white">{comment.userName}</div>
-                      <div className="text-xs text-[#999999]">{comment.createdAt}</div>
-                    </div>
-                  </div>
-
-                  {/* Comment Content */}
-                  <p className="text-[0.875rem] text-[#CCCCCC] leading-relaxed pl-11">
-                    {comment.text}
-                  </p>
-
-                  {/* Comment Actions */}
-                  <div className="pl-11">
-                    <button
-                      type="button"
-                      onClick={() => setActiveReplyId(activeReplyId === comment.id ? null : comment.id)}
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#999999] transition-colors duration-150 hover:text-[#E50914]"
-                    >
-                      <CornerDownRight size={14} />
-                      <span>Reply</span>
-                    </button>
-                  </div>
-
-                  {/* Inline Reply Input Box */}
-                  {activeReplyId === comment.id && (
-                    <div className="ml-11 mt-2 flex items-center gap-2 bg-black/60 border border-white/22 rounded-xl px-2 py-1.5">
-                      <input
-                        type="text"
-                        value={replyText}
-                        onChange={(e) => setReplyText(e.target.value)}
-                        placeholder={`Reply to @${comment.userName.toLowerCase().replace(/\s+/g, "")}...`}
-                        className="flex-1 bg-transparent border-none outline-none text-white text-[0.825rem] px-2 py-1.5 placeholder:text-[#999999]"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleAddReply(comment.id)}
-                        disabled={!replyText.trim()}
-                        className="bg-[#E50914] text-white text-[0.775rem] font-semibold px-3.5 py-1.5 rounded-md"
-                      >
-                        Send
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Nested Replies */}
-                  {comment.replies && comment.replies.length > 0 && (
-                    <div className="ml-11 mt-2 pl-4 border-l-2 border-white/12 flex flex-col gap-3.5">
-                      {comment.replies.map((reply) => (
-                        <div key={reply.id} className="flex flex-col gap-1.5">
-                          <div className="flex items-center gap-2">
-                            <div className="relative w-6 h-6 rounded-full overflow-hidden">
-                              <Image
-                                src={reply.userAvatar}
-                                alt={reply.userName}
-                                fill
-                                unoptimized
-                                className="object-cover"
-                              />
-                            </div>
-                            <span className="text-[0.825rem] font-semibold text-white">{reply.userName}</span>
-                            <span className="text-[0.725rem] text-[#999999]">{reply.createdAt}</span>
-                          </div>
-                          <p className="text-[0.825rem] text-[#CCCCCC] leading-normal pl-8">
-                            {reply.text}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                </div>
-              ))}
+              <span className="font-bold text-white text-[14px] leading-[17px] capitalize">
+                {clubScore}/10
+              </span>
+              <span className="text-[#ECECEC] font-normal text-[12px] leading-[15px] capitalize">
+                Club score
+              </span>
             </div>
+          </div>
 
-          </section>
+          {/* Title */}
+          <h1 className="text-3xl sm:text-4xl lg:text-[44px] font-bold text-white leading-tight tracking-tight uppercase [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]">
+            {movie.title}
+          </h1>
+
+          {/* Subtitle / Callout Text */}
+          <p className="text-white font-semibold text-[16px] sm:text-[18px] lg:text-[20px] leading-snug uppercase max-w-[568px]">
+            ADD TO WATCHLIST AND JOIN THE DISCUSSION BOX FOR THIS {movie.type === "movie" ? "MOVIE" : "SERIES"}.
+          </p>
+
+          {/* Action Buttons Row (button) */}
+          <div className="flex items-center gap-3 sm:gap-4 flex-wrap pt-1">
+            {/* Add To Watchlist Button - Solid Red Theme, No Glow Animation */}
+            <button
+              type="button"
+              onClick={() => setInWatchlist(!inWatchlist)}
+              className="bg-[#E60813] hover:bg-[#d00711] text-white rounded-[40px] px-6 py-3.5 h-[56px] min-w-[200px] sm:min-w-[210px] font-bold text-[18px] flex items-center justify-center gap-2.5 cursor-pointer transition-colors duration-150"
+            >
+              {inWatchlist ? (
+                <>
+                  <Check size={20} className="text-white" />
+                  <span className="text-white">In Watchlist</span>
+                </>
+              ) : (
+                <>
+                  <Bookmark size={20} className="fill-white text-white" />
+                  <span className="text-white">Add to Watchlist</span>
+                </>
+              )}
+            </button>
+
+            {/* Join Community Button */}
+            <Link
+              href="#discussion"
+              className="border-2 border-white hover:bg-white/10 text-white rounded-[40px] px-6 py-3.5 h-[56px] min-w-[190px] sm:min-w-[208px] font-bold text-[18px] flex items-center justify-center gap-2.5 no-underline transition-colors duration-150"
+            >
+              <Plus size={20} className="text-white" />
+              <span className="text-white">Join Community</span>
+            </Link>
+          </div>
 
         </div>
+      </section>
 
 
-        {/* RIGHT SIDEBAR COLUMN */}
-        <div className="flex flex-col gap-8">
+      {/* 2. MAIN 2-COLUMN LAYOUT (page) */}
+      <div className="grid grid-cols-1 lg:grid-cols-[908px_404px] gap-[32px] items-start">
 
-          {/* 1. Worth Watching Box */}
-          <section className="bg-[#333333] border border-white/12 rounded-xl p-6 flex flex-col gap-2">
-            <h2 className="text-lg font-bold text-white">Worth Watching?</h2>
-            <div className="text-3xl font-black text-[#34d399]">Yes</div>
-            <p className="text-sm text-[#CCCCCC]">
-              {recommendedPercent !== null ? `${recommendedPercent}%` : "N/A"} of members recommended this {movie.type === "movie" ? "movie" : "series"}.
-            </p>
-          </section>
+        {/* LEFT COLUMN (left side) */}
+        <div className="flex flex-col gap-[32px] min-w-0">
 
-
-          {/* 2. Details Sidebar Panel */}
-          <section className="bg-[#333333] border border-white/12 rounded-xl p-6 flex flex-col gap-5">
-            <h2 className="text-lg font-bold text-white">Details</h2>
-
-            <div className="flex flex-col gap-3.5 text-sm">
-              <div className="grid grid-cols-[120px_1fr] gap-2 items-start max-[768px]:grid-cols-[100px_1fr]">
-                <span className="text-[#999999] font-medium">Creator</span>
-                <span className="text-white font-semibold leading-snug">{creatorsText}</span>
-              </div>
-
-              <div className="grid grid-cols-[120px_1fr] gap-2 items-start max-[768px]:grid-cols-[100px_1fr]">
-                <span className="text-[#999999] font-medium">Cast/Voice Actor</span>
-                <span className="text-[#CCCCCC] leading-snug">{castActorsText}</span>
-              </div>
-
-              <div className="grid grid-cols-[120px_1fr] gap-2 items-start max-[768px]:grid-cols-[100px_1fr]">
-                <span className="text-[#999999] font-medium">Release</span>
-                <span className="text-[#CCCCCC] leading-snug">{movie.releaseDate || movie.year || "-"}</span>
-              </div>
-
-              <div className="grid grid-cols-[120px_1fr] gap-2 items-start max-[768px]:grid-cols-[100px_1fr]">
-                <span className="text-[#999999] font-medium">Episodes</span>
-                <span className="text-[#CCCCCC] leading-snug">{movie.episodes || (movie.type === "series" ? "45" : "-")}</span>
-              </div>
-
-              <div className="grid grid-cols-[120px_1fr] gap-2 items-start max-[768px]:grid-cols-[100px_1fr]">
-                <span className="text-[#999999] font-medium">Seasons</span>
-                <span className="text-[#CCCCCC] leading-snug">{movie.seasons || (movie.type === "series" ? "3 (Completed)" : "-")}</span>
-              </div>
-
-              <div className="grid grid-cols-[120px_1fr] gap-2 items-start max-[768px]:grid-cols-[100px_1fr]">
-                <span className="text-[#999999] font-medium">Run Time</span>
-                <span className="text-[#CCCCCC] leading-snug">{movie.runtime || "-"}</span>
-              </div>
-
-              <div className="grid grid-cols-[120px_1fr] gap-2 items-start max-[768px]:grid-cols-[100px_1fr]">
-                <span className="text-[#999999] font-medium">Genre</span>
-                <span className="text-[#CCCCCC] leading-snug">
-                  {movie.genre_names?.join(", ") || movie.category || "-"}
+          {/* TOP 3 RATING METRICS ROW (rate) */}
+          <section className="flex flex-row gap-[28px]">
+            {/* Club Score Card */}
+            <div className="bg-[#302F2F] border border-[#535353] rounded-[10px] h-[89px] w-[240px] shrink-0 flex flex-col items-center justify-center gap-[10px] py-[22px] px-[78px]">
+              <div className="flex items-center gap-[2px]">
+                {/* Yellow Star Icon */}
+                <Star size={20} className="text-[#FFCC00] fill-[#FFCC00]" />
+                <span className="font-bold text-[20px] text-white leading-none">
+                  {clubScore}
                 </span>
               </div>
+              <span className="font-normal text-[16px] text-[#ECECEC] capitalize leading-none whitespace-nowrap">
+                Club Score
+              </span>
+            </div>
 
-              <div className="grid grid-cols-[120px_1fr] gap-2 items-start max-[768px]:grid-cols-[100px_1fr]">
-                <span className="text-[#999999] font-medium">Country</span>
-                <span className="text-[#CCCCCC] leading-snug">{movie.country || "-"}</span>
+            {/* Recommended Card */}
+            <div className="bg-[#302F2F] border border-[#535353] rounded-[10px] h-[89px] w-[240px] shrink-0 flex flex-col items-center justify-center gap-[10px] py-[22px] px-[78px]">
+              <div className="flex items-center gap-[2px]">
+                {/* Green Thumbs-up */}
+                <ThumbsUp size={20} className="text-[#4A9245] fill-[#4A9245]" />
+                <span className="font-bold text-[20px] text-white leading-none">
+                  {recommendedPercent}%
+                </span>
               </div>
+              <span className="font-normal text-[16px] text-[#ECECEC] capitalize leading-none whitespace-nowrap">
+                Recommended
+              </span>
+            </div>
 
-              <div className="grid grid-cols-[120px_1fr] gap-2 items-start max-[768px]:grid-cols-[100px_1fr]">
-                <span className="text-[#999999] font-medium">Network</span>
-                <span className="text-[#CCCCCC] leading-snug">{movie.network || "-"}</span>
+            {/* Comments Card */}
+            <div className="bg-[#302F2F] border border-[#535353] rounded-[10px] h-[89px] w-[240px] shrink-0 flex flex-col items-center justify-center gap-[10px] py-[22px] px-[78px]">
+              <div className="flex items-center gap-[2px]">
+                {/* Blue Comment Icon */}
+                <MessageSquare size={20} className="text-[#007AFF] fill-[#007AFF]" />
+                <span className="font-bold text-[20px] text-white leading-none">
+                  {movie.vote_count ? `${movie.vote_count}+` : "10K+"}
+                </span>
               </div>
-
-              <div className="grid grid-cols-[120px_1fr] gap-2 items-start max-[768px]:grid-cols-[100px_1fr]">
-                <span className="text-[#999999] font-medium">Status</span>
-                <span className="text-[#CCCCCC] leading-snug">{movie.status || "-"}</span>
-              </div>
-
-              <div className="grid grid-cols-[120px_1fr] gap-2 items-start max-[768px]:grid-cols-[100px_1fr]">
-                <span className="text-[#999999] font-medium">Language</span>
-                <span className="text-[#CCCCCC] leading-snug">{movie.language || "-"}</span>
-              </div>
-
-              <div className="grid grid-cols-[120px_1fr] gap-2 items-start max-[768px]:grid-cols-[100px_1fr]">
-                <span className="text-[#999999] font-medium">Also Known As</span>
-                <span className="text-[#CCCCCC] leading-snug">{movie.alsoKnownAs || "-"}</span>
-              </div>
+              <span className="font-normal text-[16px] text-[#ECECEC] capitalize leading-none whitespace-nowrap">
+                Comments
+              </span>
             </div>
           </section>
 
 
-          {/* 3. You May Also Like Sidebar List */}
-          <section className="bg-[#333333] border border-white/12 rounded-xl p-6 flex flex-col gap-5">
-            <h2 className="text-lg font-bold text-white">You May Also Like</h2>
+          {/* MAIN DETAILS CONTAINER (details) */}
+          <section className="bg-[#302F2F] border border-[#535353] rounded-[10px] p-6 lg:p-[24px] flex flex-col gap-6 lg:gap-[24px]">
 
-            <div className="flex flex-col gap-3.5">
-              {recommendations.map((item) => {
+            <div className="flex flex-col gap-5">
+              <h2 className="text-white font-semibold text-[20px] leading-[24px]">
+                How Did You Feel About This?
+              </h2>
+
+              {/* Reaction Buttons Row - Fixed Width 130px, Does Not Stretch Across Div */}
+              <div className="flex items-center gap-[28px] flex-wrap">
+                {/* Like Button */}
+                <button
+                  type="button"
+                  onClick={() => handleReactionClick("like")}
+                  className={`h-[59px] w-[130px] rounded-[10px] border border-[#535353] px-3.5 py-2.5 flex items-center justify-center gap-3 cursor-pointer transition-colors duration-150 shrink-0 ${userReaction === "like"
+                    ? "bg-[#181818] shadow-inner"
+                    : "bg-[#282828]"
+                    }`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/icons/glike.png"
+                    alt="Like"
+                    className="w-5 h-5 object-contain shrink-0"
+                  />
+                  <div className="flex flex-col items-start text-left leading-tight">
+                    <span className="font-bold text-[14px] text-white">Like</span>
+                    <span className="font-normal text-[12px] text-[#C0C0C0]">
+                      {(reactions.like.count / 1000).toFixed(1)}K
+                    </span>
+                  </div>
+                </button>
+
+                {/* Love Button */}
+                <button
+                  type="button"
+                  onClick={() => handleReactionClick("love")}
+                  className={`h-[59px] w-[130px] rounded-[10px] border border-[#535353] px-3.5 py-2.5 flex items-center justify-center gap-3 cursor-pointer transition-colors duration-150 shrink-0 ${userReaction === "love"
+                    ? "bg-[#181818] shadow-inner"
+                    : "bg-[#282828]"
+                    }`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/icons/happy.png"
+                    alt="Love"
+                    className="w-5 h-5 object-contain shrink-0"
+                  />
+                  <div className="flex flex-col items-start text-left leading-tight">
+                    <span className="font-bold text-[14px] text-white">Love</span>
+                    <span className="font-normal text-[12px] text-[#C0C0C0]">
+                      {(reactions.love.count / 1000).toFixed(1)}K
+                    </span>
+                  </div>
+                </button>
+
+                {/* Favorite Button */}
+                <button
+                  type="button"
+                  onClick={() => handleReactionClick("favorite")}
+                  className={`h-[59px] w-[130px] rounded-[10px] border border-[#535353] px-3.5 py-2.5 flex items-center justify-center gap-3 cursor-pointer transition-colors duration-150 shrink-0 ${userReaction === "favorite"
+                    ? "bg-[#181818] shadow-inner"
+                    : "bg-[#282828]"
+                    }`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/icons/pheart.png"
+                    alt="Favorite"
+                    className="w-5 h-5 object-contain shrink-0"
+                  />
+                  <div className="flex flex-col items-start text-left leading-tight">
+                    <span className="font-bold text-[14px] text-white">Favorite</span>
+                    <span className="font-normal text-[12px] text-[#C0C0C0]">
+                      {(reactions.favorite.count / 1000).toFixed(1)}K
+                    </span>
+                  </div>
+                </button>
+
+                {/* Dislike Button */}
+                <button
+                  type="button"
+                  onClick={() => handleReactionClick("dislike")}
+                  className={`h-[59px] w-[130px] rounded-[10px] border border-[#535353] px-3.5 py-2.5 flex items-center justify-center gap-3 cursor-pointer transition-colors duration-150 shrink-0 ${userReaction === "dislike"
+                    ? "bg-[#181818] shadow-inner"
+                    : "bg-[#282828]"
+                    }`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/icons/dislike.png"
+                    alt="Dislike"
+                    className="w-5 h-5 object-contain shrink-0"
+                  />
+                  <div className="flex flex-col items-start text-left leading-tight">
+                    <span className="font-bold text-[14px] text-white">Dislike</span>
+                    <span className="font-normal text-[12px] text-[#C0C0C0]">
+                      {(reactions.dislike.count / 1000).toFixed(1)}K
+                    </span>
+                  </div>
+                </button>
+              </div>
+
+              {/* Poll Percentage Progress Bars (poll) */}
+              <div className="flex flex-col gap-3 pt-2">
+                {/* Like Bar */}
+                <div className="flex items-center gap-4 text-white">
+                  <span className="w-[70px] font-semibold text-[16px] capitalize shrink-0">
+                    Like
+                  </span>
+                  <div className="flex-1 h-[10px] bg-[#3B3A3A] rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[#3F7F00] rounded-full transition-all duration-300"
+                      style={{ width: `${reactions.like.percent}%` }}
+                    />
+                  </div>
+                  <span className="w-[40px] text-right font-semibold text-[14px] uppercase shrink-0 font-mono">
+                    {reactions.like.percent}%
+                  </span>
+                </div>
+
+                {/* Love Bar */}
+                <div className="flex items-center gap-4 text-white">
+                  <span className="w-[70px] font-semibold text-[16px] capitalize shrink-0">
+                    Love
+                  </span>
+                  <div className="flex-1 h-[10px] bg-[#3B3A3A] rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[#FFCC00] rounded-full transition-all duration-300"
+                      style={{ width: `${reactions.love.percent}%` }}
+                    />
+                  </div>
+                  <span className="w-[40px] text-right font-semibold text-[14px] uppercase shrink-0 font-mono">
+                    {reactions.love.percent}%
+                  </span>
+                </div>
+
+                {/* Favorite Bar */}
+                <div className="flex items-center gap-4 text-white">
+                  <span className="w-[70px] font-semibold text-[16px] capitalize shrink-0">
+                    Favorite
+                  </span>
+                  <div className="flex-1 h-[10px] bg-[#3B3A3A] rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[#C1004B] rounded-full transition-all duration-300"
+                      style={{ width: `${reactions.favorite.percent}%` }}
+                    />
+                  </div>
+                  <span className="w-[40px] text-right font-semibold text-[14px] uppercase shrink-0 font-mono">
+                    {reactions.favorite.percent}%
+                  </span>
+                </div>
+
+                {/* Dislike Bar */}
+                <div className="flex items-center gap-4 text-white">
+                  <span className="w-[70px] font-semibold text-[16px] capitalize shrink-0">
+                    Dislike
+                  </span>
+                  <div className="flex-1 h-[10px] bg-[#3B3A3A] rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[#FF0000] rounded-full transition-all duration-300"
+                      style={{ width: `${reactions.dislike.percent}%` }}
+                    />
+                  </div>
+                  <span className="w-[40px] text-right font-semibold text-[14px] uppercase shrink-0 font-mono">
+                    {reactions.dislike.percent}%
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Divider Line (Line 20) */}
+            <div className="w-full h-0 border-t border-[#535353]" />
+
+            {/* B. About Section */}
+            <div className="flex flex-col gap-3">
+              <h2 className="text-white font-semibold text-[20px] leading-[24px] capitalize">
+                about
+              </h2>
+              <p className="text-[#C0C0C0] font-normal text-[14px] leading-[22px] uppercase">
+                {movie.overview ||
+                  "In a world divided into four nations—Water, Earth, Fire, and Air—only the Avatar can master all four elements and maintain balance. After disappearing for a hundred years, Aang, the last surviving Airbender, awakens to find the world consumed by war. Alongside his friends Katara, Sokka, and later Toph, he embarks on an epic journey to master the elements, confront the Fire Nation, and restore peace to the world."}
+              </p>
+            </div>
+
+            {/* Divider Line (Line 19) */}
+            <div className="w-full h-0 border-t border-[#535353]" />
+
+            {/* C. Cast Section */}
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-white font-semibold text-[20px] leading-[24px] capitalize">
+                  Cast
+                </h2>
+              </div>
+
+              {/* Actor Img Row */}
+              <div className="relative flex items-center">
+                <div
+                  ref={castScrollRef}
+                  className="flex items-center gap-4 overflow-x-auto pb-2 [scrollbar-width:none] w-full"
+                >
+                  {(castList.length > 0
+                    ? castList
+                    : [
+                      { name: "Gordon Cormier", role: "Aang Airbender" },
+                      { name: "Kiawentiio", role: "Katara Waterbender" },
+                      { name: "Ian Ousley", role: "Sokka Warrior" },
+                      { name: "Dallas Liu", role: "Prince Zuko" },
+                      { name: "Paul Sun-Hyung Lee", role: "Uncle Iroh" },
+                      { name: "Daniel Dae Kim", role: "Fire Lord Ozai" },
+                    ]
+                  ).map((member: any, idx: number) => {
+                    const actorName =
+                      typeof member === "string"
+                        ? member
+                        : member.name || member.actor || "Actor";
+                    const charName =
+                      typeof member === "object"
+                        ? member.role || member.character || actorName
+                        : actorName;
+                    const avatarSrc =
+                      typeof member === "object" &&
+                        (member.profile_path || member.image)
+                        ? member.profile_path || member.image
+                        : `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80&sig=${idx}`;
+
+                    return (
+                      <div
+                        key={idx}
+                        className="flex flex-col items-center gap-2 shrink-0 w-[141px]"
+                      >
+                        {/* Circle Avatar (Ellipse 6) */}
+                        <div className="relative w-[70px] h-[70px] rounded-full overflow-hidden bg-[#D9D9D9] shrink-0 border border-[#535353]">
+                          <Image
+                            src={avatarSrc}
+                            alt={actorName}
+                            fill
+                            unoptimized
+                            className="object-cover object-top"
+                          />
+                        </div>
+                        {/* Name Info */}
+                        <div className="flex flex-col items-center text-center w-full leading-tight">
+                          <span className="font-medium text-[14px] text-white capitalize truncate w-full">
+                            {charName}
+                          </span>
+                          <span className="font-normal text-[12px] text-[#C0C0C0] capitalize truncate w-full">
+                            {actorName}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Right Scroll Arrow (Frame 39) */}
+                <button
+                  type="button"
+                  onClick={scrollCastRight}
+                  className="w-[36px] h-[36px] rounded-full bg-[#4F4E4E]/80 hover:bg-[#666666] border border-white/20 flex items-center justify-center shrink-0 ml-2 cursor-pointer transition-colors"
+                  aria-label="Scroll cast right"
+                >
+                  <ChevronRight size={18} className="text-white" />
+                </button>
+              </div>
+            </div>
+
+            {/* Divider Line (Line 21) */}
+            <div className="w-full h-0 border-t border-[#535353]" />
+
+            {/* D. Threaded Comments Section */}
+            <div id="discussion" className="flex flex-col gap-4">
+              <h2 className="text-white font-semibold text-[20px] leading-[24px] capitalize">
+                comments
+              </h2>
+
+              {/* Reply Input Box (Frame 66 & Frame 67) */}
+              <form
+                onSubmit={handleAddComment}
+                className="flex items-center gap-2 w-full"
+              >
+                {/* Input Frame 66 */}
+                <div className="flex-1 bg-[#3D3D3D] rounded-[8px] h-[54px] px-6 flex items-center">
+                  <input
+                    type="text"
+                    value={newCommentText}
+                    onChange={(e) => setNewCommentText(e.target.value)}
+                    placeholder="what's on your mind?"
+                    className="w-full bg-transparent outline-none text-white text-[14px] placeholder:text-[#959292] placeholder:text-[12px] placeholder:capitalize font-medium"
+                  />
+                </div>
+
+                {/* Send Button Frame 67 */}
+                <button
+                  type="submit"
+                  disabled={!newCommentText.trim()}
+                  className="bg-[#3D3D3D] hover:bg-[#4a4a4a] text-white rounded-[8px] h-[54px] px-5 flex items-center justify-center font-normal text-[12px] capitalize transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  send
+                </button>
+              </form>
+
+              {/* Comments List / No Comments Yet */}
+              {comments.length === 0 ? (
+                <div className="text-center py-4 text-[#C0C0C0] text-[14px] lowercase">
+                  no comments yet!
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4 pt-2">
+                  {comments.map((comment) => (
+                    <div
+                      key={comment.id}
+                      className="bg-[#282828] border border-[#535353] rounded-[10px] p-4 flex flex-col gap-2.5"
+                    >
+                      {/* Author Header */}
+                      <div className="flex items-center gap-3">
+                        <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0">
+                          <Image
+                            src={comment.userAvatar}
+                            alt={comment.userName}
+                            fill
+                            unoptimized
+                            className="object-cover"
+                          />
+                        </div>
+                        <div className="flex flex-col leading-none">
+                          <span className="text-[14px] font-semibold text-white">
+                            {comment.userName}
+                          </span>
+                          <span className="text-[11px] text-[#999999] pt-1">
+                            {comment.createdAt}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Comment Body */}
+                      <p className="text-[14px] text-[#C0C0C0] leading-relaxed pl-11">
+                        {comment.text}
+                      </p>
+
+                      {/* Reply Button */}
+                      <div className="pl-11">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setActiveReplyId(
+                              activeReplyId === comment.id ? null : comment.id
+                            )
+                          }
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#999999] hover:text-[#E60813] transition-colors"
+                        >
+                          <CornerDownRight size={14} />
+                          <span>Reply</span>
+                        </button>
+                      </div>
+
+                      {/* Inline Reply Input */}
+                      {activeReplyId === comment.id && (
+                        <div className="ml-11 mt-1 flex items-center gap-2 bg-[#3D3D3D] rounded-[8px] p-2">
+                          <input
+                            type="text"
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value)}
+                            placeholder={`Reply to @${comment.userName.toLowerCase().replace(/\s+/g, "")}...`}
+                            className="flex-1 bg-transparent border-none outline-none text-white text-[13px] px-2 placeholder:text-[#959292]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleAddReply(comment.id)}
+                            disabled={!replyText.trim()}
+                            className="bg-[#E60813] hover:bg-[#F40612] text-white text-xs font-semibold px-3 py-1.5 rounded-md"
+                          >
+                            Send
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Nested Replies */}
+                      {comment.replies && comment.replies.length > 0 && (
+                        <div className="ml-11 mt-1 pl-4 border-l border-[#535353] flex flex-col gap-2.5">
+                          {comment.replies.map((reply) => (
+                            <div key={reply.id} className="flex flex-col gap-1">
+                              <div className="flex items-center gap-2">
+                                <div className="relative w-6 h-6 rounded-full overflow-hidden">
+                                  <Image
+                                    src={reply.userAvatar}
+                                    alt={reply.userName}
+                                    fill
+                                    unoptimized
+                                    className="object-cover"
+                                  />
+                                </div>
+                                <span className="text-[13px] font-semibold text-white">
+                                  {reply.userName}
+                                </span>
+                                <span className="text-[11px] text-[#999999]">
+                                  {reply.createdAt}
+                                </span>
+                              </div>
+                              <p className="text-[13px] text-[#C0C0C0] pl-8">
+                                {reply.text}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+          </section>
+
+        </div>
+
+
+        {/* RIGHT COLUMN SIDEBAR (right side) */}
+        <div className="flex flex-col gap-8">
+
+          {/* 1. WORTH IT & DETAILS CONTAINER (worth it) */}
+          <section className="bg-[#302F2F] border border-[#535353] rounded-[10px] p-6 flex flex-col gap-6">
+
+            {/* Worth Watching Sub-box */}
+            <div className="flex flex-col gap-2">
+              <h2 className="text-white font-semibold text-[20px] leading-[24px] capitalize">
+                worth watching?
+              </h2>
+              <div className="font-semibold text-[24px] text-[#34d399] leading-none py-1">
+                {recommendedPercent >= 70 ? "Yes" : "N/A"}
+              </div>
+              <p className="text-[#C0C0C0] font-normal text-[14px] lowercase leading-snug">
+                {recommendedPercent}% of members recommended this {movie.type === "movie" ? "movie" : "series"}.
+              </p>
+            </div>
+
+            {/* Divider Line (Line 20) */}
+            <div className="w-full h-0 border-t border-[#535353]" />
+
+            {/* Details Table Sub-box */}
+            <div className="flex flex-col gap-3">
+              <h2 className="text-white font-semibold text-[20px] leading-[24px] capitalize">
+                details
+              </h2>
+
+              <div className="flex flex-col gap-3 text-[14px]">
+                {/* 1. Creator */}
+                <div className="flex justify-between items-start gap-4">
+                  <span className="text-white font-normal capitalize shrink-0 w-[110px]">
+                    creator
+                  </span>
+                  <span className="text-[#C0C0C0] font-normal text-[12px] text-right flex-1 break-words">
+                    {creatorsText}
+                  </span>
+                </div>
+
+                {/* 2. Cast/Voice Actor */}
+                <div className="flex justify-between items-start gap-4">
+                  <span className="text-white font-normal capitalize shrink-0 w-[110px]">
+                    cast/voice actor
+                  </span>
+                  <span className="text-[#C0C0C0] font-normal text-[12px] text-right flex-1 break-words">
+                    {castActorsText}
+                  </span>
+                </div>
+
+                {/* 3. Release */}
+                <div className="flex justify-between items-start gap-4">
+                  <span className="text-white font-normal capitalize shrink-0 w-[110px]">
+                    release
+                  </span>
+                  <span className="text-[#C0C0C0] font-normal text-[12px] text-right flex-1">
+                    {movie.releaseDate || movie.year || "Oct 19, 2022"}
+                  </span>
+                </div>
+
+                {/* 4. Episodes */}
+                <div className="flex justify-between items-start gap-4">
+                  <span className="text-white font-normal capitalize shrink-0 w-[110px]">
+                    episodes
+                  </span>
+                  <span className="text-[#C0C0C0] font-normal text-[12px] text-right flex-1">
+                    {movie.episodes || (movie.type === "series" ? "45" : "-")}
+                  </span>
+                </div>
+
+                {/* 5. Seasons */}
+                <div className="flex justify-between items-start gap-4">
+                  <span className="text-white font-normal capitalize shrink-0 w-[110px]">
+                    seasons
+                  </span>
+                  <span className="text-[#C0C0C0] font-normal text-[12px] text-right flex-1">
+                    {movie.seasons || (movie.type === "series" ? "3 (Completed)" : "-")}
+                  </span>
+                </div>
+
+                {/* 6. Run Time */}
+                <div className="flex justify-between items-start gap-4">
+                  <span className="text-white font-normal capitalize shrink-0 w-[110px]">
+                    run time
+                  </span>
+                  <span className="text-[#C0C0C0] font-normal text-[12px] text-right flex-1">
+                    {movie.runtime || "45-60 min/ep"}
+                  </span>
+                </div>
+
+                {/* 7. Genre */}
+                <div className="flex justify-between items-start gap-4">
+                  <span className="text-white font-normal capitalize shrink-0 w-[110px]">
+                    genre
+                  </span>
+                  <span className="text-[#C0C0C0] font-normal text-[12px] text-right flex-1">
+                    {movie.genre_names?.join(", ") || movie.category || "Action, Adventure, Fantasy"}
+                  </span>
+                </div>
+
+                {/* 8. Country */}
+                <div className="flex justify-between items-start gap-4">
+                  <span className="text-white font-normal capitalize shrink-0 w-[110px]">
+                    country
+                  </span>
+                  <span className="text-[#C0C0C0] font-normal text-[12px] text-right flex-1">
+                    {movie.country || "United States"}
+                  </span>
+                </div>
+
+                {/* 9. Network */}
+                <div className="flex justify-between items-start gap-4">
+                  <span className="text-white font-normal capitalize shrink-0 w-[110px]">
+                    network
+                  </span>
+                  <span className="text-[#C0C0C0] font-normal text-[12px] text-right flex-1">
+                    {movie.network || "Netflix Studio"}
+                  </span>
+                </div>
+
+                {/* 10. Status */}
+                <div className="flex justify-between items-start gap-4">
+                  <span className="text-white font-normal capitalize shrink-0 w-[110px]">
+                    status
+                  </span>
+                  <span className="text-[#C0C0C0] font-normal text-[12px] text-right flex-1">
+                    {movie.status || "On Going"}
+                  </span>
+                </div>
+
+                {/* 11. Language */}
+                <div className="flex justify-between items-start gap-4">
+                  <span className="text-white font-normal capitalize shrink-0 w-[110px]">
+                    language
+                  </span>
+                  <span className="text-[#C0C0C0] font-normal text-[12px] text-right flex-1">
+                    {movie.language || "English"}
+                  </span>
+                </div>
+
+                {/* 12. Also Known As */}
+                <div className="flex justify-between items-start gap-4">
+                  <span className="text-white font-normal capitalize shrink-0 w-[110px]">
+                    also known as
+                  </span>
+                  <span className="text-[#C0C0C0] font-normal text-[12px] text-right flex-1">
+                    {movie.alsoKnownAs || "-"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+          </section>
+
+
+          {/* 2. YOU MAY ALSO LIKE (recommendation) */}
+          <section className="bg-[#302F2F] border border-[#535353] rounded-[10px] p-6 flex flex-col gap-4">
+            <h2 className="text-white font-semibold text-[20px] leading-[24px] capitalize">
+              you may also like
+            </h2>
+
+            <div className="flex flex-col gap-3">
+              {(recommendations.length > 0
+                ? recommendations
+                : [
+                  {
+                    id: "rec1",
+                    title: "The First Frost",
+                    year: "2025",
+                    category: "Drama",
+                    user_rating: 9.8,
+                    poster: DEFAULT_POSTER,
+                  },
+                  {
+                    id: "rec2",
+                    title: "Crash Landing on You",
+                    year: "2025",
+                    category: "Drama",
+                    user_rating: 9.8,
+                    poster: DEFAULT_POSTER,
+                  },
+                  {
+                    id: "rec3",
+                    title: "Purple Hearts",
+                    year: "2022",
+                    category: "Movie",
+                    user_rating: 9.8,
+                    poster: DEFAULT_POSTER,
+                  },
+                ]
+              ).map((item: any) => {
                 const itemPoster =
                   item.posterUrl ||
                   item.poster ||
@@ -759,16 +1073,21 @@ export default function MovieDetailPage() {
                       : `https://image.tmdb.org/t/p/w500${item.poster_path}`
                     : DEFAULT_POSTER);
 
-                const itemScoreRaw = item.user_rating ?? item.vote_average ?? null;
-                const itemScore = itemScoreRaw !== null && itemScoreRaw !== undefined ? Number(itemScoreRaw).toFixed(1) : "N/A";
+                const itemScoreRaw =
+                  item.user_rating ?? item.vote_average ?? null;
+                const itemScore =
+                  itemScoreRaw !== null && itemScoreRaw !== undefined
+                    ? Number(itemScoreRaw).toFixed(1)
+                    : "9.8";
 
                 return (
                   <Link
                     key={item.id}
                     href={`/movie/${item.id}`}
-                    className="flex items-center gap-3.5 p-2 rounded-md bg-black/30 border border-white/12 no-underline transition-all duration-150 hover:bg-white/8 hover:border-white/22 hover:translate-x-0.5 group"
+                    className="flex items-center gap-5 p-1 rounded-md hover:bg-[#3D3D3D]/50 transition-colors group no-underline"
                   >
-                    <div className="relative w-12 aspect-[2/3] rounded-md overflow-hidden shrink-0">
+                    {/* Thumbnail (Rectangle 34624242) */}
+                    <div className="relative w-[80px] h-[80px] rounded-[6px] overflow-hidden shrink-0 bg-[#282828] border border-[#535353]">
                       <Image
                         src={itemPoster}
                         alt={item.title}
@@ -778,18 +1097,42 @@ export default function MovieDetailPage() {
                       />
                     </div>
 
-                    <div className="flex-1 min-w-0 flex flex-col gap-1">
-                      <h3 className="text-sm font-semibold text-white truncate transition-colors duration-150 group-hover:text-[#E50914]">
+                    {/* Middle Info (Frame 64) */}
+                    <div className="flex-1 min-w-0 flex flex-col justify-center gap-1.5">
+                      <h3 className="font-medium text-[14px] text-white capitalize truncate group-hover:text-[#E60813] transition-colors leading-tight">
                         {item.title}
                       </h3>
-                      <p className="text-xs text-[#999999] font-mono truncate">
-                        {item.year || "2025"} • {item.genre_names?.[0] || item.category || "Drama"} • 1 Season
-                      </p>
-                    </div>
 
-                    <div className="flex items-center gap-1 text-sm font-bold text-[#fbbf24] font-mono">
-                      <Star size={12} className="fill-[#fbbf24]" />
-                      <span>{itemScore}</span>
+                      {/* Detail row */}
+                      <div className="flex items-center justify-between text-[12px] text-white">
+                        <div className="flex items-center gap-1.5">
+                          <span>{item.year || "2025"}</span>
+                          <span className="w-1 h-1 rounded-full bg-[#D9D9D9] inline-block" />
+                          <span className="capitalize">
+                            {item.genre_names?.[0] || item.category || "Drama"}
+                          </span>
+                          <span className="w-1 h-1 rounded-full bg-[#D9D9D9] inline-block" />
+                          <span>
+                            {item.type === "movie" ? "Movie" : "1 Season"}
+                          </span>
+                        </div>
+
+                        {/* Rating (Frame 20) */}
+                        <div className="flex items-center gap-1 shrink-0">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src="/icons/Vector.png"
+                            alt="Star"
+                            className="w-2.5 h-2.5 object-contain"
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none";
+                            }}
+                          />
+                          <span className="text-[12px] font-normal text-white">
+                            {itemScore}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </Link>
                 );
@@ -802,35 +1145,8 @@ export default function MovieDetailPage() {
       </div>
 
 
-      {/* BOTTOM CTA BANNER */}
-      <section className="bg-gradient-to-r from-[rgba(229,9,20,0.25)] via-[rgba(20,20,20,0.95)] to-[rgba(229,9,20,0.25)] border border-[rgba(229,9,20,0.4)] rounded-2xl p-12 text-center flex flex-col items-center gap-7 shadow-[0_10px_30px_rgba(0,0,0,0.6)]">
-        <div className="flex flex-col gap-2 max-w-[650px]">
-          <h2 className="text-3xl font-black tracking-wide uppercase text-white">
-            NOT SURE WHAT TO WATCH NEXT ?
-          </h2>
-          <p className="text-[#CCCCCC] text-base leading-relaxed">
-            Discover community-driven recommendations, honest reviews, and trending netflix content tailored for you.
-          </p>
-        </div>
-
-        <div className="flex items-center justify-center gap-4 flex-wrap">
-          <Link
-            href="/movies"
-            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-[0.95rem] font-bold no-underline transition-all duration-150 bg-[#E50914] text-white shadow-[0_4px_15px_rgba(229,9,20,0.35)] hover:bg-[#F40612] hover:-translate-y-0.5"
-          >
-            <Clapperboard size={18} />
-            <span>Explore</span>
-          </Link>
-
-          <Link
-            href="/community"
-            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-[0.95rem] font-bold no-underline transition-all duration-150 bg-[#E50914] text-white shadow-[0_4px_15px_rgba(229,9,20,0.35)] hover:bg-[#F40612] hover:-translate-y-0.5"
-          >
-            <Users size={18} />
-            <span>Join Community</span>
-          </Link>
-        </div>
-      </section>
+      {/* 3. BOTTOM CTA BANNER (Frame 44) */}
+      <WatchNextBanner />
 
     </main>
   );

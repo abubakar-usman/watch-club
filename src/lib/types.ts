@@ -80,3 +80,36 @@ export interface MovieProvider {
   fetchDetails(id: string | number): Promise<Movie | null>;
   fetchByCategory(category: string, page?: number, limit?: number): Promise<MovieSearchResult>;
 }
+
+export interface UserProfile {
+  id: string;
+  fullName: string;
+  username: string;
+  bio: string;
+  email: string;
+  age: number;
+  avatarUrl: string | null;
+  genrePreferences: string[];
+  joinedDate: string;
+  watchlistCount: number;
+  discussionCount: number;
+}
+
+export interface WatchlistMovie extends Movie {
+  addedAt: string;
+  userRating?: number;
+}
+
+export interface DiscussionPost {
+  id: string;
+  authorName: string;
+  authorAvatar: string | null;
+  movieTitle: string;
+  movieId: number;
+  content: string;
+  likes: number;
+  comments: number;
+  timeAgo: string;
+  imageUrl?: string;
+}
+

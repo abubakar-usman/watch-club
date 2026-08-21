@@ -1,109 +1,169 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import {
+  Heart,
+  MessageCircle,
+  Film,
+  ChevronDown,
+  BookmarkPlus,
+  Users,
+} from "lucide-react";
+
+import ProfilePictureUpload from "@/components/ProfilePictureUpload";
+import EditProfileModal from "@/components/EditProfileModal";
+import WatchlistCard from "@/components/WatchlistCard";
+import MovieCard from "@/components/MovieCard";
+
 import { useAuth } from "@/lib/auth/useAuth";
-import MovieCard, { Movie } from "@/components/MovieCard";
+import { Movie, UserProfile, WatchlistMovie, DiscussionPost } from "@/lib/types";
 
-interface CommentItem {
-  id: string;
-  movie_id: number;
-  user_id: string;
-  parent_id: string | null;
-  comment_text: string;
-  rating: number | null;
-  created_at: string;
+const initialUserProfile: UserProfile = {
+  id: "",
+  fullName: "Maryam Amir",
+  username: "@Maryam19",
+  bio: 'Living Inside My Own World Of "Make-Believe."',
+  email: "maryam@watchclub.demo",
+  age: 24,
+  avatarUrl: "/popcorn.png",
+  genrePreferences: [],
+  joinedDate: "",
+  watchlistCount: 0,
+  discussionCount: 0,
+};
+
+type SortKey = "date" | "title" | "rating";
+
+const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+  { key: "date", label: "Date Added" },
+  { key: "title", label: "Title (A–Z)" },
+  { key: "rating", label: "Rating" },
+];
+
+function sortWatchlist(movies: WatchlistMovie[], key: SortKey): WatchlistMovie[] {
+  const arr = [...movies];
+  switch (key) {
+    case "title":
+      return arr.sort((a, b) => a.title.localeCompare(b.title));
+    case "rating":
+      return arr.sort(
+        (a, b) => (b.vote_average ?? 0) - (a.vote_average ?? 0)
+      );
+    case "date":
+    default:
+      return arr.sort(
+        (a, b) =>
+          new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime()
+      );
+  }
 }
 
-interface WatchlistItem {
-  id: string;
-  user_id: string;
-  movie_id: number;
-  added_at: string;
-}
-
-function timeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const s = Math.floor(diff / 1000);
-  if (s < 60) return `${s}s ago`;
-  const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
+interface GenreRecommendationRow {
+  genre: string;
+  movies: Movie[];
 }
 
 export default function PortalPage() {
-  const { user, token, isAuthenticated, isLoading: authLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState<"comments" | "replies" | "watchlist">("comments");
+  const { user } = useAuth();
 
-  // State for data
-  const [comments, setComments] = useState<CommentItem[]>([]);
-  const [replies, setReplies] = useState<CommentItem[]>([]);
-  const [watchlistMovies, setWatchlistMovies] = useState<Movie[]>([]);
+  // ── Profile state ──────────────────────────────────────────────────────────
+  const [profile, setProfile] = useState<UserProfile>(initialUserProfile);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(
+    initialUserProfile.avatarUrl
+  );
 
-  // Loading & error states
-  const [loadingComments, setLoadingComments] = useState(false);
-  const [loadingReplies, setLoadingReplies] = useState(false);
+  // Sync auth user to profile if available
+  useEffect(() => {
+    if (user) {
+      const name = user.name || "Maryam Amir";
+      setProfile((prev) => ({
+        ...prev,
+        id: user.id || prev.id,
+        fullName: name,
+        username: `@${name.toLowerCase().replace(/\s+/g, "")}`,
+        email: user.email || prev.email,
+      }));
+    }
+  }, [user]);
+
+  // ── Discussions state ──────────────────────────────────────────────────────
+  const [discussions, setDiscussions] = useState<DiscussionPost[]>([]);
+
+  // ── UI state ───────────────────────────────────────────────────────────────
+  const [activeTab, setActiveTab] = useState<"discussion" | "watchlist">(
+    "watchlist"
+  );
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [sortKey, setSortKey] = useState<SortKey>("date");
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  // ── Watchlist state from API ───────────────────────────────────────────────
+  const [watchlist, setWatchlist] = useState<WatchlistMovie[]>([]);
   const [loadingWatchlist, setLoadingWatchlist] = useState(false);
 
-  /* Fetch User Comments */
-  const fetchUserComments = useCallback(async () => {
-    if (!token) return;
-    setLoadingComments(true);
-    try {
-      const res = await fetch("/api/portal/comments", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setComments(data.comments || []);
+  // ── Recommendations state from API ─────────────────────────────────────────
+  const [recommendationRows, setRecommendationRows] = useState<GenreRecommendationRow[]>([]);
+  const [loadingRecommendations, setLoadingRecommendations] = useState(true);
+
+  // ── Fetch Watchlist from API ───────────────────────────────────────────────
+  useEffect(() => {
+    async function fetchWatchlistApi() {
+      setLoadingWatchlist(true);
+      try {
+        const res = await fetch("/api/watchlist");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.watchlist && Array.isArray(data.watchlist)) {
+            const moviePromises = data.watchlist.map(async (item: { movie_id: number; added_at?: string }) => {
+              try {
+                const mRes = await fetch(`/api/movies/${item.movie_id}`);
+                if (mRes.ok) {
+                  const mData = await mRes.json();
+                  return { ...mData, addedAt: item.added_at || new Date().toISOString() } as WatchlistMovie;
+                }
+              } catch {
+                return null;
+              }
+              return null;
+            });
+            const fetched = (await Promise.all(moviePromises)).filter((m): m is WatchlistMovie => m !== null);
+            setWatchlist(fetched);
+          }
+        }
+      } catch {
+        setWatchlist([]);
+      } finally {
+        setLoadingWatchlist(false);
       }
-    } catch {
-      // Ignore error
-    } finally {
-      setLoadingComments(false);
     }
-  }, [token]);
 
-  /* Fetch Replies to User */
-  const fetchUserReplies = useCallback(async () => {
-    if (!token) return;
-    setLoadingReplies(true);
-    try {
-      const res = await fetch("/api/portal/replies", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setReplies(data.replies || []);
-      }
-    } catch {
-      // Ignore error
-    } finally {
-      setLoadingReplies(false);
-    }
-  }, [token]);
+    fetchWatchlistApi();
+  }, []);
 
-  /* Fetch Watchlist & Movie details */
-  const fetchUserWatchlist = useCallback(async () => {
-    if (!token) return;
-    setLoadingWatchlist(true);
-    try {
-      const res = await fetch("/api/watchlist", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const items: WatchlistItem[] = data.watchlist || [];
+  // ── Fetch Genre Recommendations from API ──────────────────────────────────
+  useEffect(() => {
+    async function fetchRecommendations() {
+      setLoadingRecommendations(true);
+      const targetGenres = ["Action", "Thriller", "Sci-Fi"];
 
-        // Fetch details for each movie in watchlist
-        const moviePromises = items.map(async (item) => {
+      try {
+        const rowPromises = targetGenres.map(async (genre) => {
           try {
-            const mRes = await fetch(`/api/movies/${item.movie_id}`);
-            if (mRes.ok) {
-              const mData = await mRes.json();
-              return mData as Movie;
+            const res = await fetch(`/api/movies/category/${encodeURIComponent(genre)}`);
+            if (res.ok) {
+              const data = await res.json();
+              const movies: Movie[] = (data.results || []).map((m: any) => ({
+                id: m.id,
+                title: m.title,
+                posterUrl: m.posterUrl || m.poster || (m.poster_path ? (m.poster_path.startsWith('http') ? m.poster_path : `https://image.tmdb.org/t/p/w500${m.poster_path}`) : ""),
+                vote_average: m.vote_average || m.user_rating,
+                year: m.year || (m.releaseDate ? m.releaseDate.slice(0, 4) : undefined),
+                category: genre,
+              }));
+              return { genre, movies };
             }
           } catch {
             return null;
@@ -111,316 +171,412 @@ export default function PortalPage() {
           return null;
         });
 
-        const fetchedMovies = (await Promise.all(moviePromises)).filter(
-          (m): m is Movie => m !== null
+        const rows = (await Promise.all(rowPromises)).filter(
+          (r): r is GenreRecommendationRow => r !== null && r.movies.length > 0
         );
 
-        setWatchlistMovies(fetchedMovies);
+        setRecommendationRows(rows);
+      } catch {
+        setRecommendationRows([]);
+      } finally {
+        setLoadingRecommendations(false);
+      }
+    }
+
+    fetchRecommendations();
+  }, []);
+
+  // ── Handlers ───────────────────────────────────────────────────────────────
+
+  const handleAvatarUpload = useCallback((dataUrl: string) => {
+    setAvatarUrl(dataUrl);
+  }, []);
+
+  const handleProfileSave = useCallback((updated: Partial<UserProfile>) => {
+    setProfile((prev) => ({ ...prev, ...updated }));
+  }, []);
+
+  const handleRemoveFromWatchlist = useCallback(async (id: number | string) => {
+    setWatchlist((prev) => prev.filter((m) => m.id !== id));
+    try {
+      await fetch(`/api/watchlist?movie_id=${id}`, { method: "DELETE" });
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const handleShareProfile = async () => {
+    const url = `${window.location.origin}/portal`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: `${profile.fullName} on WatchClub`, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
       }
     } catch {
-      // Ignore error
-    } finally {
-      setLoadingWatchlist(false);
+      // fallback
     }
-  }, [token]);
+  };
 
-  useEffect(() => {
-    if (isAuthenticated && token) {
-      fetchUserComments();
-      fetchUserReplies();
-      fetchUserWatchlist();
-    }
-  }, [isAuthenticated, token, fetchUserComments, fetchUserReplies, fetchUserWatchlist]);
+  const sortedWatchlist = sortWatchlist(watchlist, sortKey);
 
-  if (authLoading) {
-    return (
-      <div className="max-w-4xl mx-auto py-12 space-y-6 animate-pulse">
-        <div className="h-24 bg-white/5 rounded-2xl" />
-        <div className="h-12 bg-white/5 rounded-xl w-64" />
-        <div className="h-64 bg-white/5 rounded-2xl" />
-      </div>
-    );
-  }
-
-  /* Unauthenticated Prompt */
-  if (!isAuthenticated || !user) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center py-12">
-        <div className="max-w-md w-full bg-black/60 border border-white/8 rounded-2xl p-8 text-center space-y-6 shadow-2xl backdrop-blur">
-          <div className="w-16 h-16 mx-auto rounded-full bg-brand-red/15 border border-brand-red/30 flex items-center justify-center text-brand-red text-2xl">
-            👤
-          </div>
-          <div className="space-y-2">
-            <h1 className="font-heading text-2xl text-white">User Portal</h1>
-            <p className="text-gray text-sm leading-relaxed">
-              Sign in to view your posted comments, track replies to your discussions, and manage your saved watchlist.
-            </p>
-          </div>
-          <div className="flex gap-4 pt-2">
-            <Link
-              href="/login"
-              className="flex-1 bg-brand-red hover:bg-brand-red-dark text-white font-semibold py-3 rounded-xl transition-colors shadow-lg shadow-brand-red/20"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/signup"
-              className="flex-1 bg-white/5 hover:bg-white/10 text-white font-semibold py-3 rounded-xl border border-white/10 transition-colors"
-            >
-              Sign Up
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const initials = (user.name ?? user.email).slice(0, 1).toUpperCase();
-  const displayName = user.name ?? user.email.split("@")[0];
-
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-4">
-      {/* ── USER HEADER CARD ─────────────────────────────────────── */}
-      <div className="bg-black/60 border border-white/8 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl backdrop-blur relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-brand-red/10 rounded-full blur-3xl pointer-events-none" />
+    <>
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        profile={profile}
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        onSave={handleProfileSave}
+      />
 
-        <div className="flex items-center gap-5">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-brand-red to-brand-red-dark flex items-center justify-center text-white font-mono text-2xl font-bold shadow-lg shadow-brand-red/20 border border-white/20">
-            {initials}
-          </div>
-          <div className="space-y-1 text-center md:text-left">
-            <div className="flex items-center justify-center md:justify-start gap-2 flex-wrap">
-              <h1 className="font-heading text-2xl text-white tracking-tight">{displayName}</h1>
-            </div>
-            <p className="font-mono text-xs text-gray">{user.email}</p>
-            <p className="font-mono text-[11px] text-gray/50">ID: {user.id}</p>
-          </div>
-        </div>
+      <div className="w-full max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
-        {/* Quick Stats */}
-        <div className="flex items-center gap-6 border-t md:border-t-0 md:border-l border-white/10 pt-4 md:pt-0 md:pl-8">
-          <div className="text-center">
-            <span className="block font-mono text-xl text-brand-red font-bold">{comments.length}</span>
-            <span className="font-mono text-[10px] text-gray uppercase">Comments</span>
-          </div>
-          <div className="w-px h-8 bg-white/10" />
-          <div className="text-center">
-            <span className="block font-mono text-xl text-white font-bold">{replies.length}</span>
-            <span className="font-mono text-[10px] text-gray uppercase">Replies</span>
-          </div>
-          <div className="w-px h-8 bg-white/10" />
-          <div className="text-center">
-            <span className="block font-mono text-xl text-white font-bold">{watchlistMovies.length}</span>
-            <span className="font-mono text-[10px] text-gray uppercase">Watchlist</span>
-          </div>
-        </div>
-      </div>
-
-      {/* ── TAB NAVIGATION ────────────────────────────────────────── */}
-      <div className="flex border-b border-white/10 space-x-8">
-        <button
-          onClick={() => setActiveTab("comments")}
-          id="tab-user-comments"
-          className={`pb-4 font-heading text-lg transition-colors relative ${activeTab === "comments" ? "text-white" : "text-gray hover:text-white/80"
-            }`}
+        {/* ── PROFILE HEADER CARD (Design Spec: Profile watchclub.txt) ────────────────────────────── */}
+        <section
+          id="profile-header-card"
+          className="rounded-[12px] border border-[#535353] bg-[#302F2F] p-6 sm:p-8"
         >
-          Your Comments ({comments.length})
-          {activeTab === "comments" && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-red rounded-full" />
-          )}
-        </button>
+          {/* Top Section: Avatar + Name & Username & Bio */}
+          <div className="flex items-start sm:items-center gap-5 sm:gap-6">
+            {/* Avatar */}
+            <ProfilePictureUpload
+              avatarUrl={avatarUrl}
+              displayName={profile.fullName}
+              onUpload={handleAvatarUpload}
+              size={110}
+            />
 
-        <button
-          onClick={() => setActiveTab("replies")}
-          id="tab-user-replies"
-          className={`pb-4 font-heading text-lg transition-colors relative ${activeTab === "replies" ? "text-white" : "text-gray hover:text-white/80"
-            }`}
-        >
-          Replies to You ({replies.length})
-          {activeTab === "replies" && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-red rounded-full" />
-          )}
-        </button>
-
-        <button
-          onClick={() => setActiveTab("watchlist")}
-          id="tab-user-watchlist"
-          className={`pb-4 font-heading text-lg transition-colors relative ${activeTab === "watchlist" ? "text-white" : "text-gray hover:text-white/80"
-            }`}
-        >
-          Your Watchlist ({watchlistMovies.length})
-          {activeTab === "watchlist" && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-red rounded-full" />
-          )}
-        </button>
-      </div>
-
-      {/* ── TAB CONTENT ───────────────────────────────────────────── */}
-
-      {/* TAB 1: YOUR COMMENTS */}
-      {activeTab === "comments" && (
-        <div className="space-y-4">
-          {loadingComments ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-24 bg-white/5 rounded-xl animate-pulse" />
-              ))}
-            </div>
-          ) : comments.length === 0 ? (
-            <div className="bg-black/40 border border-white/8 rounded-2xl p-12 text-center space-y-3">
-              <p className="text-3xl">💬</p>
-              <h3 className="font-heading text-lg text-white">No comments yet</h3>
-              <p className="text-gray text-sm">
-                You haven't posted any comments or reviews. Explore trending movies to start a discussion!
+            {/* Profile Info */}
+            <div className="flex-1 min-w-0">
+              <h1 className="text-white font-semibold text-[28px] sm:text-[32px] leading-tight truncate font-heading">
+                {profile.fullName}
+              </h1>
+              <p className="text-white text-[14px] font-normal mt-0.5">
+                {profile.username}
               </p>
-              <Link
-                href="/"
-                className="inline-block bg-brand-red/20 text-brand-red border border-brand-red/30 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand-red/30 transition-colors"
-              >
-                Browse Movies
-              </Link>
+              <p className="text-white text-[14px] font-normal mt-1 leading-snug">
+                {profile.bio || 'Living Inside My Own World Of "Make-Believe."'}
+              </p>
             </div>
-          ) : (
-            comments.map((item) => (
-              <div
-                key={item.id}
-                className="bg-black/40 border border-white/8 hover:border-white/20 rounded-xl p-5 space-y-3 transition-colors shadow-lg"
-              >
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-xs text-brand-red">
-                      Movie #{item.movie_id}
-                    </span>
-                    <span className="font-mono text-[10px] text-gray/50">
-                      {timeAgo(item.created_at)}
-                    </span>
-                    {item.parent_id && (
-                      <span className="font-mono text-[10px] bg-white/5 border border-white/10 px-2 py-0.5 rounded text-gray/70">
-                        REPLY
-                      </span>
-                    )}
-                  </div>
+          </div>
 
-                  {item.rating && (
-                    <div className="flex items-center gap-0.5">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <span
-                          key={i}
-                          className={`font-mono text-xs ${i < item.rating! ? "text-brand-red" : "text-gray/20"
-                            }`}
+          {/* Bottom Section: 2 Wide Gray Buttons (bg: #3D3D3D, border: #535353, height: 46px, radius: 8px) */}
+          <div className="flex flex-col sm:flex-row items-center gap-4 mt-6">
+            <button
+              id="edit-profile-btn"
+              onClick={() => setIsEditOpen(true)}
+              className="w-full sm:flex-1 h-[46px] rounded-[8px] bg-[#3D3D3D] border border-[#535353] hover:bg-[#484848] hover:border-white/40 text-white font-normal text-[13px] sm:text-[14px] flex items-center justify-center gap-1.5 transition-colors cursor-pointer capitalize"
+            >
+              <span>+</span> Edit Profile
+            </button>
+            <button
+              id="share-profile-btn"
+              onClick={handleShareProfile}
+              className="w-full sm:flex-1 h-[46px] rounded-[8px] bg-[#3D3D3D] border border-[#535353] hover:bg-[#484848] hover:border-white/40 text-white font-normal text-[13px] sm:text-[14px] flex items-center justify-center gap-1.5 transition-colors cursor-pointer capitalize"
+            >
+              {copied ? "Copied Link!" : "Share Profile"}
+            </button>
+          </div>
+        </section>
+
+        {/* ── TABS ROW (Line 21 border: #535353) ──────────────────────────────────────── */}
+        <div className="flex items-center justify-between border-b border-[#535353] pb-3">
+          {/* Left Tabs */}
+          <div className="flex items-center gap-3">
+            <button
+              id="tab-discussion"
+              onClick={() => setActiveTab("discussion")}
+              className={`px-4 py-2 rounded-[16px] text-[14px] font-medium transition-all ${activeTab === "discussion"
+                  ? "bg-[#3D3D3D] text-white"
+                  : "text-white hover:text-white/80"
+                }`}
+            >
+              Discussion
+            </button>
+
+            <button
+              id="tab-watchlist"
+              onClick={() => setActiveTab("watchlist")}
+              className={`px-5 py-2 rounded-[16px] text-[14px] font-medium transition-all ${activeTab === "watchlist"
+                  ? "bg-[#3D3D3D] text-white"
+                  : "text-white hover:text-white/80"
+                }`}
+            >
+              Watchlist
+            </button>
+          </div>
+
+          {/* Right Sort By */}
+          <div className="relative">
+            <button
+              id="sort-by-btn"
+              onClick={() => setIsSortOpen((v) => !v)}
+              className="flex items-center gap-1 text-white hover:text-white/80 text-[14px] font-medium transition-colors cursor-pointer"
+            >
+              Sort By{" "}
+              <ChevronDown
+                size={15}
+                className={`transition-transform duration-200 ${isSortOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+            {isSortOpen && (
+              <div
+                className="absolute right-0 top-full mt-2 w-44 rounded-xl border border-[#535353] shadow-2xl z-50 overflow-hidden bg-[#302F2F]"
+              >
+                {SORT_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.key}
+                    id={`sort-${opt.key}`}
+                    onClick={() => {
+                      setSortKey(opt.key);
+                      setIsSortOpen(false);
+                    }}
+                    className={`w-full text-left px-4 py-3 text-[13px] transition-colors ${sortKey === opt.key
+                        ? "text-[#E50914] bg-[#E50914]/10"
+                        : "text-[#C7C7C7] hover:text-white hover:bg-white/5"
+                      }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── TAB CONTENT ─────────────────────────────────────────────────── */}
+
+        {/* ─ DISCUSSION TAB ─ */}
+        {activeTab === "discussion" && (
+          <section id="discussion-content" className="space-y-4">
+            {discussions.length === 0 ? (
+              /* Empty state */
+              <div
+                className="rounded-2xl border border-[#535353] p-12 text-center space-y-4 bg-[#302F2F]"
+              >
+                <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center bg-[#E50914]/10 border border-[#E50914]/25">
+                  <MessageCircle size={28} className="text-[#E50914]" />
+                </div>
+                <h3 className="text-white font-semibold text-[18px]">No discussions yet</h3>
+                <p className="text-[#959292] text-[14px] max-w-sm mx-auto">
+                  You haven't started any discussions. Explore movies and join the conversation!
+                </p>
+                <Link
+                  href="/community"
+                  className="inline-block px-6 py-2.5 rounded-full text-[14px] font-semibold text-white bg-[#E50914] hover:bg-[#c5070f] transition-all"
+                >
+                  Browse Discussions
+                </Link>
+              </div>
+            ) : (
+              discussions.map((post) => (
+                <div
+                  key={post.id}
+                  className="rounded-2xl border border-[#535353] p-5 sm:p-6 transition-all hover:border-white/25 bg-[#302F2F]"
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-9 h-9 rounded-full overflow-hidden border border-[#535353] flex-shrink-0">
+                      {post.authorAvatar ? (
+                        <Image
+                          src={post.authorAvatar}
+                          alt={post.authorName}
+                          width={36}
+                          height={36}
+                          className="object-cover w-full h-full"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-[#E50914] to-[#8B0000] flex items-center justify-center text-white text-sm font-bold">
+                          {post.authorName[0]}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white text-[14px] font-semibold truncate">
+                        {post.authorName}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/movie/${post.movieId}`}
+                          className="text-[#E50914] text-[12px] hover:underline truncate"
                         >
-                          ★
-                        </span>
-                      ))}
+                          {post.movieTitle}
+                        </Link>
+                        <span className="text-[#595959] text-[11px]">· {post.timeAgo}</span>
+                      </div>
                     </div>
-                  )}
-                </div>
-
-                <p className="text-white/90 text-sm leading-relaxed">{item.comment_text}</p>
-
-                <div className="pt-2 border-t border-white/5 flex justify-end">
-                  <Link
-                    href={`/movie/${item.movie_id}#discussion`}
-                    className="font-mono text-xs text-brand-red hover:text-white transition-colors"
-                  >
-                    View on Movie Page →
-                  </Link>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-
-      {/* TAB 2: REPLIES TO YOU */}
-      {activeTab === "replies" && (
-        <div className="space-y-4">
-          {loadingReplies ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-24 bg-white/5 rounded-xl animate-pulse" />
-              ))}
-            </div>
-          ) : replies.length === 0 ? (
-            <div className="bg-black/40 border border-white/8 rounded-2xl p-12 text-center space-y-3">
-              <p className="text-3xl">🔔</p>
-              <h3 className="font-heading text-lg text-white">No replies yet</h3>
-              <p className="text-gray text-sm">
-                Nobody has replied to your comments yet. Stay active in discussions to get notifications!
-              </p>
-            </div>
-          ) : (
-            replies.map((reply) => (
-              <div
-                key={reply.id}
-                className="bg-black/40 border border-white/8 hover:border-white/20 rounded-xl p-5 space-y-3 transition-colors shadow-lg"
-              >
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-6 h-6 rounded-full bg-brand-red/40 flex items-center justify-center text-white text-[10px] font-mono">
-                      {reply.user_id.slice(0, 1).toUpperCase()}
-                    </div>
-                    <span className="font-mono text-xs text-white">
-                      {reply.user_id}
-                    </span>
-                    <span className="font-mono text-[10px] text-gray/50">
-                      {timeAgo(reply.created_at)}
-                    </span>
                   </div>
 
-                  <span className="font-mono text-xs text-brand-red">
-                    Movie #{reply.movie_id}
+                  <p className="text-[#C7C7C7] text-[14px] leading-relaxed">
+                    {post.content}
+                  </p>
+
+                  <div className="flex items-center gap-5 mt-4 pt-3 border-t border-[#535353]">
+                    <button className="flex items-center gap-1.5 text-[#959292] hover:text-[#E50914] transition-colors text-[13px] font-medium">
+                      <Heart size={16} />
+                      {post.likes}
+                    </button>
+                    <button className="flex items-center gap-1.5 text-[#959292] hover:text-white transition-colors text-[13px] font-medium">
+                      <MessageCircle size={16} />
+                      {post.comments}
+                    </button>
+                    <Link
+                      href={`/movie/${post.movieId}#discussion`}
+                      className="ml-auto text-[12px] text-[#E50914] hover:text-white transition-colors font-medium"
+                    >
+                      View discussion →
+                    </Link>
+                  </div>
+                </div>
+              ))
+            )}
+          </section>
+        )}
+
+        {/* ─ WATCHLIST TAB ─ */}
+        {activeTab === "watchlist" && (
+          <section id="watchlist-content" className="space-y-5">
+            {watchlist.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+                {sortedWatchlist.map((movie) => (
+                  <WatchlistCard
+                    key={movie.id}
+                    movie={movie}
+                    onRemove={handleRemoveFromWatchlist}
+                  />
+                ))}
+
+                {/* Add movie card */}
+                <Link
+                  href="/movies"
+                  id="add-movie-card"
+                  className="flex flex-col items-center justify-center rounded-[12px] border border-dashed border-[#535353] aspect-[2/3] text-[#959292] hover:border-[#E50914] hover:text-[#E50914] transition-all group"
+                  style={{ background: "#1a1a1c" }}
+                >
+                  <BookmarkPlus size={24} className="mb-2" />
+                  <span className="text-[11px] font-medium text-center px-2">
+                    Add Movie
                   </span>
+                </Link>
+              </div>
+            ) : (
+              /* FRAME 103: EMPTY WATCHLIST STATE (Exact CSS Spec) */
+              <div
+                className="w-full rounded-[12px] bg-[#282828] border border-[#535353] py-[40px] px-[16px] sm:px-[84px] flex flex-col items-center justify-center gap-[28px] text-center"
+                id="watchlist-empty-state"
+              >
+                {/* Image: 248px x 200px */}
+                <div className="relative w-[248px] h-[200px] flex-shrink-0">
+                  <Image
+                    src="/watchlist.png"
+                    alt="Looking for something to add"
+                    fill
+                    className="object-contain"
+                    priority
+                  />
                 </div>
 
-                <p className="text-white/90 text-sm leading-relaxed">{reply.comment_text}</p>
+                {/* Frame 104: Text + CTA wrapper */}
+                <div className="flex flex-col items-center justify-center gap-[40px] w-full max-w-[984px]">
+                  {/* Text block */}
+                  <div className="flex flex-col items-center justify-center gap-[8px] w-full max-w-[984px]">
+                    <h2 className="font-heading font-semibold text-[24px] leading-[28px] text-white capitalize text-center">
+                      Looking for something to add?
+                    </h2>
+                    <p className="font-sans font-medium text-[16px] leading-[19px] text-white capitalize text-center max-w-[984px]">
+                      Your watchlist is where great stories wait. Save movies and series you want to watch, and never lose track of what’s next.
+                    </p>
+                  </div>
 
-                <div className="pt-2 border-t border-white/5 flex justify-end">
+                  {/* CTA Buttons */}
+                  <div className="flex flex-row items-center justify-center gap-[16px] flex-wrap">
+                    {/* Btn 1: Explore Movies & Series */}
+                    <Link
+                      href="/movies"
+                      id="explore-movies-series-btn"
+                      className="h-[34px] min-w-[218px] px-[12px] py-[8px] bg-[#E60813] hover:bg-[#c5070f] rounded-[10px] flex flex-row items-center justify-center gap-[8px] text-white transition-colors"
+                    >
+                      <Film size={18} />
+                      <span className="font-sans font-medium text-[14px] leading-[17px] capitalize text-white whitespace-nowrap">
+                        Explore movies &amp; series
+                      </span>
+                    </Link>
+
+                    {/* Btn 2: Go To Community */}
+                    <Link
+                      href="/community"
+                      id="go-to-community-btn"
+                      className="h-[34px] min-w-[170px] px-[12px] py-[8px] bg-[#E60813] hover:bg-[#c5070f] rounded-[10px] flex flex-row items-center justify-center gap-[8px] text-white transition-colors"
+                    >
+                      <Users size={18} />
+                      <span className="font-sans font-medium text-[14px] leading-[17px] capitalize text-white whitespace-nowrap">
+                        Go to community
+                      </span>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ── GENRE-BASED RECOMMENDATIONS FROM API ─────────────────────────── */}
+        <section id="genre-recommendations" className="space-y-8 pt-4">
+          <div className="flex items-center gap-3">
+            <div className="w-1 h-6 rounded-full bg-[#E50914]" />
+            <h2 className="text-white font-bold text-[20px]">
+              Recommended for You
+            </h2>
+          </div>
+
+          {loadingRecommendations ? (
+            <div className="space-y-4">
+              {[1, 2].map((i) => (
+                <div key={i} className="h-48 bg-white/5 rounded-2xl animate-pulse" />
+              ))}
+            </div>
+          ) : recommendationRows.length === 0 ? (
+            <div className="p-8 text-center text-[#959292] border border-[#535353] rounded-2xl bg-[#302F2F]">
+              No recommendations available right now.
+            </div>
+          ) : (
+            recommendationRows.map((rec) => (
+              <div key={rec.genre} className="space-y-3">
+                {/* Genre row header */}
+                <div className="flex items-center justify-between">
+                  <h3 className="text-[#C7C7C7] text-[16px] font-semibold flex items-center gap-2">
+                    <span
+                      className="w-2 h-2 rounded-full bg-[#E50914] inline-block"
+                    />
+                    {rec.genre}
+                  </h3>
                   <Link
-                    href={`/movie/${reply.movie_id}#discussion`}
-                    className="font-mono text-xs text-brand-red hover:text-white transition-colors"
+                    href={`/genre/${rec.genre.toLowerCase()}`}
+                    className="text-[12px] text-[#E50914] hover:text-white transition-colors font-medium"
                   >
-                    Reply Back →
+                    See all →
                   </Link>
+                </div>
+
+                {/* Movie grid row */}
+                <div className="flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                  {rec.movies.map((movie) => (
+                    <div
+                      key={movie.id}
+                      className="flex-none w-[140px] sm:w-[160px] md:w-[180px]"
+                    >
+                      <MovieCard movie={movie} />
+                    </div>
+                  ))}
                 </div>
               </div>
             ))
           )}
-        </div>
-      )}
-
-      {/* TAB 3: YOUR WATCHLIST */}
-      {activeTab === "watchlist" && (
-        <div className="space-y-4">
-          {loadingWatchlist ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="aspect-[2/3] bg-white/5 rounded-lg animate-pulse" />
-              ))}
-            </div>
-          ) : watchlistMovies.length === 0 ? (
-            <div className="bg-black/40 border border-white/8 rounded-2xl p-12 text-center space-y-3">
-              <p className="text-3xl">📋</p>
-              <h3 className="font-heading text-lg text-white">Your Watchlist is empty</h3>
-              <p className="text-gray text-sm">
-                Save movies to your watchlist from any movie detail page to track them here.
-              </p>
-              <Link
-                href="/"
-                className="inline-block bg-brand-red/20 text-brand-red border border-brand-red/30 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand-red/30 transition-colors"
-              >
-                Find Movies
-              </Link>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {watchlistMovies.map((movie) => (
-                <MovieCard key={movie.id} movie={movie} />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+        </section>
+      </div>
+    </>
   );
 }
